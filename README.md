@@ -1,4 +1,4 @@
-# hexa-chip 🔲 — Chip Substrate (HEXA family)
+# 🔲 hexa-chip — Chip Substrate (HEXA family)
 
 > **Chip substrate — 28-verb semiconductor stack** (architecture / design /
 > EDA / process / packaging / NPU / PIM / 3D / photonic / RTL-gen / yield /
