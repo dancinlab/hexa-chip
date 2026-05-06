@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-3d/chip-3d.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 8322abeed5cc57f269991c196a5b1e53 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-3d

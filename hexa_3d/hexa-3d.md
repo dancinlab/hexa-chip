@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/hexa-3d/hexa-3d.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 31a0f24987b699a9618b8615435ee726 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: hexa-3d

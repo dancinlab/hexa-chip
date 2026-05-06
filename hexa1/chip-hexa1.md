@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-hexa1/chip-hexa1.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: bb9af3713b4c5b4b7e8a1bf68186f6d8 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-hexa1

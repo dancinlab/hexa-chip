@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-sc/chip-sc.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 709d26316bff251a24bebf34e259e902 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-sc

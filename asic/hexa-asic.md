@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/hexa-asic/hexa-asic.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: f514f01af1a4c55887564d671d6929b3 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: hexa-asic

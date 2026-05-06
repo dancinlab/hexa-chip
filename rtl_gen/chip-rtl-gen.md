@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-rtl-gen/chip-rtl-gen.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 4b6a012b9f0eaa04acede08045a8e5a9 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-rtl-gen

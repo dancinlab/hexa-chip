@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-dse-pipeline/chip-dse-pipeline.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 12b83d10ebee2ef2d5d5dc4596135085 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-dse-pipeline

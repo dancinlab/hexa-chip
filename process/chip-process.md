@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-process/chip-process.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: e6529cb95c3a93ffac937f59f67a69b4 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-process

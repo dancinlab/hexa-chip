@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/consciousness-chip/consciousness-chip.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 9966c231989a57b061fd33fed6c39d44 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: consciousness-chip

@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/hexa-wafer/hexa-wafer.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 569843c4044473a4a3762fd821b2207f -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: hexa-wafer

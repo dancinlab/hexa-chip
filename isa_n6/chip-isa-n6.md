@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-isa-n6/chip-isa-n6.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 155d892d0e84fb6e045b17f917ae5a34 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-isa-n6

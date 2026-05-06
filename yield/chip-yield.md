@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-yield/chip-yield.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: b6e3d72ec19b477da73dbc0f9fa8bf2b -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-yield

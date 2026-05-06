@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-verify-test/chip-verify-test.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: a6fb9d9b333f36b427c433d7db9f47c7 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-verify-test

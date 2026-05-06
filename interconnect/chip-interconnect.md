@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-interconnect/chip-interconnect.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 2390d6f0fd63071bc24e0c2625fac5c5 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-interconnect

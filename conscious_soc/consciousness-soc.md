@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/consciousness-soc/consciousness-soc.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 434d180e2d83938bc9b9dd55b862a831 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: consciousness-soc

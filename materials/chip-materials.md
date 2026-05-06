@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-materials/chip-materials.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 52899bc7b3aa9ae3979f35964e586bf6 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-materials

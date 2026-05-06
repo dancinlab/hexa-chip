@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/advanced-packaging/advanced-packaging.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 705b6ee91b744878ee4e980f5eb6a322 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: advanced-packaging

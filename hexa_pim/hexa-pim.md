@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/hexa-pim/hexa-pim.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 1b3343ddcfa9d00592d0f63b551fe876 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: hexa-pim

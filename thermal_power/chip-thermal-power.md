@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/compute/chip-thermal-power/chip-thermal-power.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: aa59bfb4af4f26c9f1150e1e02690702 -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: chip-thermal-power
