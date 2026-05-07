@@ -5,6 +5,20 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — RSC iter 9)
+
+- `verify/numerics_hbm_parity.hexa` — **F-CHIP-3 T2 second-stack**.
+  8-row (= σ-τ) vendor × gen parity: Hynix/Samsung HBM3 + Hynix/Samsung/
+  Micron HBM3E + Hynix/Samsung/Micron HBM4. 12 checks: HBM3E and HBM4
+  trinity = τ-1 = 3; HBM3E vendor BW within ±5% of trinity mean (1180
+  / 1229 / 1180); HBM3E geomean ∈ [1100, 1300] σ³-class; HBM4_avg /
+  HBM3E_avg ∈ [1.5, 2] flagship gen jump; predicted BW = bus·rate/8
+  within ±1% per row; Samsung ≥ Hynix ≥ Micron at HBM3E.
+  Sentinel: `__HEXA_CHIP_NUMERICS_HBM_PARITY__ PASS`.
+- Aggregate: 13/13 → 14/14 PASS.
+- F-CHIP-3: T1 ✓ + T2 ×2.
+- All 3 measurable falsifiers now at T1 ✓ + T2 ×2.
+
 ### Added (2026-05-08 — RSC iter 8)
 
 - `verify/numerics_npu_parity.hexa` — **F-CHIP-2 T2 second-stack**.

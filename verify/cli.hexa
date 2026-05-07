@@ -36,7 +36,8 @@ let CHECKS = [
     ["numerics-npu",     "numerics_npu.hexa",      "F-CHIP-2 T2 — NPU roofline + 4-stage pipeline + commercial parity"],
     ["numerics-hbm",     "numerics_hbm.hexa",      "F-CHIP-3 T2 — HBM 5-gen bandwidth/capacity + vendor parity"],
     ["numerics-process-parity", "numerics_process_parity.hexa", "F-CHIP-1 T2-2 — TSMC/Samsung/Intel density vs K/f²"],
-    ["numerics-npu-parity",     "numerics_npu_parity.hexa",     "F-CHIP-2 T2-2 — 6-vendor INT8/FP16 ratio = φ(6)"]
+    ["numerics-npu-parity",     "numerics_npu_parity.hexa",     "F-CHIP-2 T2-2 — 6-vendor INT8/FP16 ratio = φ(6)"],
+    ["numerics-hbm-parity",     "numerics_hbm_parity.hexa",     "F-CHIP-3 T2-2 — Hynix/Samsung/Micron HBM3/3E/4 trinity"]
 ]
 
 fn _root() -> str {
