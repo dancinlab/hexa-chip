@@ -5,6 +5,19 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — RSC iter 10)
+
+- `verify/numerics_process_solver.hexa` — **F-CHIP-1 T2 third-stack**.
+  Iterative root finders for "what node hits 1000 MTr/mm² density?"
+  Closed form: f* = √(K/D*) = √4.325 ≈ 2.0796 nm. Two solvers:
+  bisection (≤25 iters, log2 bound) and Newton-Raphson (≤6 = n iters,
+  super-linear). 12 checks: both methods converge to f*; agree within
+  1e-3; round-trip D(f*)=1000; bisection/Newton ratio ∈ [τ, σ-φ];
+  Newton-far-start ≤ τ+φ. Sentinel: `__HEXA_CHIP_NUMERICS_PROCESS_SOLVER__ PASS`.
+- Aggregate: 14/14 → 15/15 PASS.
+- **F-CHIP-1 closure: 33% → 67%** (T1 ✓ + T2 ×3) — sat-1 condition met
+  for F-CHIP-1.
+
 ### Added (2026-05-08 — RSC iter 9)
 
 - `verify/numerics_hbm_parity.hexa` — **F-CHIP-3 T2 second-stack**.
