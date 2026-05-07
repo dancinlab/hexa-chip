@@ -5,6 +5,19 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — RSC iter 14)
+
+- `verify/numerics_lattice_arithmetic.hexa` — **math_pure stability floor**
+  cross-check (recipe §7.4 priority 8). 13 checks span n ∈ [1, 24]:
+  σ/τ/φ int ↔ float agreement; n=6 master identity twice (int + float);
+  sqrt_pure round-trip stable to 1e-9 (worst Δ = 3.55e-15); exp(log(n))
+  round-trip; pow_pure 6²=36 and 6^½=√6; log2(6)·ln(2)=ln(6); identity
+  holds at exactly 2 values (n=1, n=6); Σσ(k) monotone; φ(p)=p-1 for
+  all 9 primes; π(24)=9.
+  Sentinel: `__HEXA_CHIP_NUMERICS_LATTICE_ARITHMETIC__ PASS`.
+- Aggregate: 18/18 → 19/19 PASS.
+- Recipe §7.4 priority 8 complete.
+
 ### Added (2026-05-08 — RSC iter 13)
 
 - `verify/numerics_cross_pillar.hexa` — **cross-cutter T2** anchor.
