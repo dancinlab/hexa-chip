@@ -5,6 +5,20 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — RSC iter 13)
+
+- `verify/numerics_cross_pillar.hexa` — **cross-cutter T2** anchor.
+  Verifies process/NPU/HBM pillars agree on every n=6 lattice primitive:
+  σ(6)=12 (12 nodes / 12 lanes / 12 peak Hi); τ(6)=4 (design / dataflow /
+  HBM-gen stages); φ(6)=2 (digital-analog / INT8-FP16 / TSV-hybrid);
+  J₂=24 (NPU macroblock = HBM3 channels); 2^(σ-φ)=1024 (HBM bus = NPU
+  vector path). 12 checks: σ/τ/φ/J₂/2^(σ-φ) agreement, master identity,
+  measurable pillar count = τ-1, falsifier count = τ, per-pillar
+  T1+T2 = τ, total pillar scripts = σ.
+  Sentinel: `__HEXA_CHIP_NUMERICS_CROSS_PILLAR__ PASS`.
+- Aggregate: 17/17 → 18/18 PASS.
+- Recipe §7.4 priority 7 (cross-cutter T2) complete.
+
 ### Added (2026-05-08 — RSC iter 12)
 
 - `verify/numerics_hbm_solver.hexa` — **F-CHIP-3 T2 third-stack**.

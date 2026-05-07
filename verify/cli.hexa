@@ -40,7 +40,8 @@ let CHECKS = [
     ["numerics-hbm-parity",     "numerics_hbm_parity.hexa",     "F-CHIP-3 T2-2 — Hynix/Samsung/Micron HBM3/3E/4 trinity"],
     ["numerics-process-solver", "numerics_process_solver.hexa", "F-CHIP-1 T2-3 — bisection + Newton root finders"],
     ["numerics-npu-solver",     "numerics_npu_solver.hexa",     "F-CHIP-2 T2-3 — power iteration on τ×τ stage matrix"],
-    ["numerics-hbm-solver",     "numerics_hbm_solver.hexa",     "F-CHIP-3 T2-3 — Jacobi 1-D Laplace on σ-φ=10 stack"]
+    ["numerics-hbm-solver",     "numerics_hbm_solver.hexa",     "F-CHIP-3 T2-3 — Jacobi 1-D Laplace on σ-φ=10 stack"],
+    ["numerics-cross-pillar",   "numerics_cross_pillar.hexa",   "cross-cutter T2 — process/NPU/HBM σ/τ/φ/J₂ agreement"]
 ]
 
 fn _root() -> str {
