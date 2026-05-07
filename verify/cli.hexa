@@ -29,7 +29,8 @@ let CHECKS = [
     ["cross-doc",     "cross_doc_audit.hexa",   "cross-document n=6 invariant agreement"],
     ["release",       "release_cadence.hexa",   ".roadmap §A.2 release cadence + §A.4 falsifiers"],
     ["falsifiers",    "falsifier_check.hexa",   "F-CHIP-1..F-CHIP-4 preregister dump"],
-    ["calc-process",  "calc_process.hexa",      "F-CHIP-1 T1 — process node σ(6)=12 ladder derivation"]
+    ["calc-process",  "calc_process.hexa",      "F-CHIP-1 T1 — process node σ(6)=12 ladder derivation"],
+    ["calc-npu",      "calc_npu.hexa",          "F-CHIP-2 T1 — NPU dataflow τ(6)=4 stage decomposition"]
 ]
 
 fn _root() -> str {

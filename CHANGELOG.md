@@ -5,6 +5,17 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — RSC iter 2)
+
+- `verify/calc_npu.hexa` — **F-CHIP-2 T1** algebraic derivation.
+  11 integer-arithmetic checks pin τ(6)=4 to the NPU 4-stage
+  dataflow pipeline (load → MAC → activate → store) AND to the
+  Eyeriss 4-pattern taxonomy (weight/output/input/row stationary),
+  plus σ(6)=12 MAC-lane target and σ·φ·τ=96 macroblock budget.
+  Sentinel: `__HEXA_CHIP_CALC_NPU__ PASS`.
+- Aggregate: 6/6 → 7/7 PASS.
+- Closure progress: F-CHIP-2 closure 0% → 33% (T1 ✓; T2/T3 TBD).
+
 ### Added (2026-05-07 — RSC iter 1)
 
 - `verify/calc_process.hexa` — **F-CHIP-1 T1** algebraic derivation.
