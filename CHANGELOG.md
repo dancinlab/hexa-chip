@@ -3,6 +3,21 @@
 All notable changes to **hexa-chip** are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and SemVer.
 
+## [Unreleased]
+
+### Added (2026-05-07 — RSC iter 1)
+
+- `verify/calc_process.hexa` — **F-CHIP-1 T1** algebraic derivation.
+  11 integer-arithmetic checks pin σ(6)=12 to the 12-generation
+  process node ladder (180nm → 3nm), including endpoint cumulative
+  shrink (60×) and per-step √2 ratio band across all 11 transitions.
+  Sentinel: `__HEXA_CHIP_CALC_PROCESS__ PASS`.
+- `verify/cli.hexa` — registers the new `calc-process` target;
+  aggregate goes 5/5 → 6/6 PASS.
+- Closure progress: F-CHIP-1 closure 0% → 33% (T1 ✓; T2/T3 TBD).
+  Following the **Runnable Surface Construction** recipe pattern from
+  `~/core/bedrock/docs/runnable_surface_recipe.md` §7.4 priority 3.
+
 ## [1.0.0] - 2026-05-06
 
 ### Added
@@ -51,9 +66,9 @@ All notable changes to **hexa-chip** are documented here. Format follows
 - Extracted from `n6-architecture/domains/compute/` at SHA `c0f1f570`
   (commit `proposal(infra): reframe critical-mineral-arbitration
   kick-spec to peaceful-only scope`, 2026-05-06).
-- Sister extractions in `need-singularity` org: `hexa-bio` (4 molecular
+- Sister extractions in `dancinlab` org: `hexa-bio` (4 molecular
   verbs), `hexa-rtsc`, `hexa-codex`, `anima`, plus `hexa-{antimatter,
   bot, brain, cosmos, earth, energy, fantasy, fusion, lang, millennium,
   os, pet, space, sscb, time, ufo}`.
 
-[1.0.0]: https://github.com/need-singularity/hexa-chip/releases/tag/v1.0.0
+[1.0.0]: https://github.com/dancinlab/hexa-chip/releases/tag/v1.0.0

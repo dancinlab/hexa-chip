@@ -24,11 +24,12 @@
 // Cost: $0 (each subprocess is a stdlib hexa script).
 
 let CHECKS = [
-    ["n6",          "n6_arithmetic.hexa",     "n=6 master-identity arithmetic"],
-    ["inventory",   "inventory_check.hexa",   "29-verb / 6-group inventory + spec.md presence"],
-    ["cross-doc",   "cross_doc_audit.hexa",   "cross-document n=6 invariant agreement"],
-    ["release",     "release_cadence.hexa",   ".roadmap §A.2 release cadence + §A.4 falsifiers"],
-    ["falsifiers",  "falsifier_check.hexa",   "F-CHIP-1..F-CHIP-4 preregister dump"]
+    ["n6",            "n6_arithmetic.hexa",     "n=6 master-identity arithmetic"],
+    ["inventory",     "inventory_check.hexa",   "29-verb / 6-group inventory + spec.md presence"],
+    ["cross-doc",     "cross_doc_audit.hexa",   "cross-document n=6 invariant agreement"],
+    ["release",       "release_cadence.hexa",   ".roadmap §A.2 release cadence + §A.4 falsifiers"],
+    ["falsifiers",    "falsifier_check.hexa",   "F-CHIP-1..F-CHIP-4 preregister dump"],
+    ["calc-process",  "calc_process.hexa",      "F-CHIP-1 T1 — process node σ(6)=12 ladder derivation"]
 ]
 
 fn _root() -> str {
