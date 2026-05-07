@@ -5,6 +5,18 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — RSC iter 5)
+
+- `verify/numerics_npu.hexa` — **F-CHIP-2 T2 first-stack** numerical
+  re-derivation. 11 float-arithmetic checks via `math_pure`: σ²-wide
+  × J₂-tile @ 4 GHz lands at 27.6 TOPS (commercial mobile-NPU class);
+  Apple ANE (35) / Exynos 2400 (17) / Hexagon (45) / Tensor G3 (3) all
+  inside [J₂/4, 2·J₂]; geomean TOPS = 16.8 ≈ J₂ ±1.5×; INT8/FP16 = φ;
+  roofline I* = 6 op/byte ∈ [τ, σ]; log2(2·J₂)≈n; ANE/Tensor ratio ≈ σ.
+  Sentinel: `__HEXA_CHIP_NUMERICS_NPU__ PASS`.
+- Aggregate: 9/9 → 10/10 PASS.
+- F-CHIP-2: T1 ✓ + T2 ×1 (need ×3 for sat-1).
+
 ### Added (2026-05-07 — RSC iter 4)
 
 - `verify/numerics_process.hexa` — **F-CHIP-1 T2 first-stack** numerical
