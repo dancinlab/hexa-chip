@@ -30,7 +30,8 @@ let CHECKS = [
     ["release",       "release_cadence.hexa",   ".roadmap §A.2 release cadence + §A.4 falsifiers"],
     ["falsifiers",    "falsifier_check.hexa",   "F-CHIP-1..F-CHIP-4 preregister dump"],
     ["calc-process",  "calc_process.hexa",      "F-CHIP-1 T1 — process node σ(6)=12 ladder derivation"],
-    ["calc-npu",      "calc_npu.hexa",          "F-CHIP-2 T1 — NPU dataflow τ(6)=4 stage decomposition"]
+    ["calc-npu",      "calc_npu.hexa",          "F-CHIP-2 T1 — NPU dataflow τ(6)=4 stage decomposition"],
+    ["calc-hbm",      "calc_hbm.hexa",          "F-CHIP-3 T1 — HBM σ-φ=10 ceiling + σ+τ=16 frontier"]
 ]
 
 fn _root() -> str {

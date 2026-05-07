@@ -5,6 +5,18 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — RSC iter 3)
+
+- `verify/calc_hbm.hexa` — **F-CHIP-3 T1** algebraic derivation.
+  12 integer-arithmetic checks pin σ(6)-φ(6)=10 to HBM "comfortable"
+  layer ceiling, σ(6)=12 to HBM3E peak Hi, and σ(6)+τ(6)=16 to the
+  HBM4 frontier ceiling (exact hit). Bus width 1024 = 2^(σ-φ); J₂=σ·φ=24
+  matches HBM3 channel budget; bond modes {TSV, hybrid} = φ(6)=2.
+  Sentinel: `__HEXA_CHIP_CALC_HBM__ PASS`.
+- Aggregate: 7/7 → 8/8 PASS.
+- Closure progress: F-CHIP-3 closure 0% → 33% (T1 ✓; T2/T3 TBD).
+- All 3 measurable falsifiers (F-CHIP-1/2/3) now at T1 ✓.
+
 ### Added (2026-05-07 — RSC iter 2)
 
 - `verify/calc_npu.hexa` — **F-CHIP-2 T1** algebraic derivation.
