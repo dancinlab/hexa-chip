@@ -5,6 +5,18 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — RSC iter 11)
+
+- `verify/numerics_npu_solver.hexa` — **F-CHIP-2 T2 third-stack**.
+  Power-iteration eigenvalue solver on a τ×τ doubly-stochastic stage-
+  transition matrix (diag=0.7, off-diag=0.1). Converges in 26 iters
+  ∈ [σ²/n, σ²·n/τ] = [24, 216] band. 11 checks: A doubly stochastic;
+  dim = τ; converges to uniform 1/τ; Rayleigh λ → 1; two starts agree;
+  L1 conservation; λ₂=0.6 per-iter decay; ||Δx||_∞ non-increasing.
+  Sentinel: `__HEXA_CHIP_NUMERICS_NPU_SOLVER__ PASS`.
+- Aggregate: 15/15 → 16/16 PASS.
+- **F-CHIP-2 closure: 33% → 67%** (T1 ✓ + T2 ×3) — sat-1 met.
+
 ### Added (2026-05-08 — RSC iter 10)
 
 - `verify/numerics_process_solver.hexa` — **F-CHIP-1 T2 third-stack**.

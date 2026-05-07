@@ -38,7 +38,8 @@ let CHECKS = [
     ["numerics-process-parity", "numerics_process_parity.hexa", "F-CHIP-1 T2-2 — TSMC/Samsung/Intel density vs K/f²"],
     ["numerics-npu-parity",     "numerics_npu_parity.hexa",     "F-CHIP-2 T2-2 — 6-vendor INT8/FP16 ratio = φ(6)"],
     ["numerics-hbm-parity",     "numerics_hbm_parity.hexa",     "F-CHIP-3 T2-2 — Hynix/Samsung/Micron HBM3/3E/4 trinity"],
-    ["numerics-process-solver", "numerics_process_solver.hexa", "F-CHIP-1 T2-3 — bisection + Newton root finders"]
+    ["numerics-process-solver", "numerics_process_solver.hexa", "F-CHIP-1 T2-3 — bisection + Newton root finders"],
+    ["numerics-npu-solver",     "numerics_npu_solver.hexa",     "F-CHIP-2 T2-3 — power iteration on τ×τ stage matrix"]
 ]
 
 fn _root() -> str {
