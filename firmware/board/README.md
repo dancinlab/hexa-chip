@@ -1,0 +1,85 @@
+# Phase E paper-tier hardware artifacts
+
+> Phase E paper-tier hardware design artifacts for the 3 HEXA-CHIP firmware
+> boards. **No physical hardware exists.** No Gerbers, no fab quotes, no SPICE
+> netlists at this stage — only "design-on-paper" representations that
+> precede physical PCB fabrication.
+>
+> Status: paper only (2026-05-08). Phase E iter 1.
+> Roadmap: `.roadmap.hexa_chip §A.6` (Stage-1+ hardware path).
+
+## Layout
+
+```
+firmware/board/
+├── README.md                       # this file
+├── bom_master.csv                  # aggregated BOM across all 3 boards
+├── fw01_corner/
+│   ├── schematic_paper.md          # ASCII block-level schematic
+│   └── kicad_project.txt           # KiCad project intent stub
+├── fw02_npu/
+│   ├── schematic_paper.md
+│   └── kicad_project.txt
+└── fw03_hbm/
+│   ├── schematic_paper.md
+│   └── kicad_project.txt
+```
+
+## Boards
+
+| board ID         | falsifier | dir            | per-board cost | layers | size (mm)  |
+|:-----------------|:----------|:---------------|:---------------|:-------|:-----------|
+| HEXA-CHIP-FW-01  | F-CHIP-1  | `fw01_corner/` | ~$155          | 4      | 100×80     |
+| HEXA-CHIP-FW-02  | F-CHIP-2  | `fw02_npu/`    | ~$345          | 8      | 160×120    |
+| HEXA-CHIP-FW-03  | F-CHIP-3  | `fw03_hbm/`    | ~$1870         | 10 HDI | 200×160    |
+
+Grand total per single-set run: **~$2370**.
+
+## Cross-link to Phase D HDL + MCU
+
+| board           | Verilog top                              | MCU host                              |
+|:----------------|:-----------------------------------------|:--------------------------------------|
+| HEXA-CHIP-FW-01 | `firmware/hdl/process_corner_top.v`      | `firmware/mcu/corner_seq.hexa`        |
+| HEXA-CHIP-FW-02 | `firmware/hdl/isa_n6_top.v`              | `firmware/mcu/npu_host.hexa`          |
+| HEXA-CHIP-FW-03 | `firmware/hdl/hbm_thermal_top.v`         | `firmware/mcu/thermal_coord.hexa`     |
+
+Paper board spec (pinmap + power + bringup): `firmware/doc/board_v0_spec.md`.
+
+## Phase E gates (G1 → G5)
+
+| gate | deliverable                                    | needs                       | status     |
+|:-----|:-----------------------------------------------|:----------------------------|:-----------|
+| G1   | KiCad schematic (paper → `.kicad_sch`)         | engineer-week per board     | pending    |
+| G2   | PCB layout placeholder (`.kicad_pcb`)          | layout tool licence + DRC   | pending    |
+| G3   | Fab quote (Gerber → JLCPCB / Eurocircuits)     | finalized BOM + Gerbers     | pending    |
+| G4   | BOM finalization (vendor lock + lifecycle)     | NDA close (Samsung+SK Hynix)| pending    |
+| G5   | Physical procurement + pilot run (qty 10)      | ~$25 K funding + lab space  | pending    |
+
+Gate G1 is paper-tier and unblocks once a hardware engineer is allocated.
+G2-G5 require funding (~$25 K) plus foundry MOU (Samsung Foundry + SK Hynix).
+
+## Constraints (paper-tier)
+
+- KiCad project FILES (`.kicad_pro` / `.kicad_sch` / `.kicad_pcb`) are
+  intentionally **absent**. The `kicad_project.txt` stubs are intent markers
+  reserving filenames; actual KiCad artifacts land at G1.
+- All schematics are ASCII block-level only — see `schematic_paper.md` per
+  board. No real net-level CAD.
+- BOM (`bom_master.csv`) is the aggregated, cross-board candidate-part list
+  pulled from `firmware/doc/board_v0_spec.md` §1.2 / §2.2 / §3.2.
+- HBM4 16-Hi sample part is vendor-NDA (SK Hynix); Si interposer is foundry
+  MOU (Samsung CoWoS-class partner). These line items have no public price.
+
+## Phase chain
+
+```
+Phase A datasheets   →  <verb>/doc/datasheet_*.md
+Phase B numerics     →  verify/numerics_*.hexa
+Phase C sim-firmware →  firmware/sim/*.hexa
+Phase D HDL + MCU    →  firmware/{hdl,mcu}/
+Phase E paper board  →  firmware/board/             ← THIS
+Phase E.1 KiCad real →  firmware/board/*.kicad_*    ← G1+ (deferred)
+Phase F fab + bringup→  physical hardware           ← G5+ (deferred)
+```
+
+v0.1 freeze: 2026-05-08. v0.2 after Phase E G1 (KiCad schematic land).
