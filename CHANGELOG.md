@@ -5,6 +5,46 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Pivot record (2026-05-08 — Phase D paused → hexa-embedded upstream)
+
+User pivoted mid-Phase-D (HDL Verilog + MCU Rust skeleton) to design
+upstream `hexa-embedded` stdlib first. hexa-chip Phase D will resume
+once `hexa-embedded` stabilizes and provides separate-import peripheral
+modules (gpio/i2c/spi/uart/adc/dac/pwm/timer/intr/dma/rtc/core, plus
+`prelude` umbrella).
+
+Pre-pivot complete work (Phase A → C.5):
+
+| commit  | iter      | artifact                                      | falsifier   |
+|:--------|:----------|:----------------------------------------------|:------------|
+| e03582b | A iter 1  | hbm/doc/datasheet_hbm.md                      | F-CHIP-3    |
+| 47893c2 | A iter 2  | npu_n6/doc/datasheet_npu_n6.md                | F-CHIP-2    |
+| 1b4d3e9 | A iter 3  | process/doc/datasheet_process.md              | F-CHIP-1    |
+| 6e3b432 | B iter 1  | verify/numerics_spice_corner.hexa             | F-CHIP-1 T2-4 |
+| cc8e670 | B iter 2  | verify/numerics_rtl_isa_n6.hexa               | F-CHIP-2 T2-4 |
+| 0951f35 | B iter 3  | verify/numerics_power_thermal.hexa            | F-CHIP-3 T2-4 |
+| 56119c0 | C iter 1+2| firmware/sim/process_corner_monitor.hexa + npu_dispatcher.hexa | F-CHIP-1+2 |
+| addf9cb | C iter 3  | firmware/sim/hbm_thermal_controller.hexa      | F-CHIP-3 (canon-aware) |
+| 1d24ff7 | C.5       | firmware/doc/board_v0_spec.md (3-board)       | all 3       |
+
+Coverage:
+- 3 foundry-pitch datasheets (Phase A) — Samsung+SK Hynix anchored at
+  draft time; foundry-lock relaxed mid-stream per autonomy directive
+- 3 Stage-1 sim-parity numerics (Phase B) — extends F1/F2/F3 T2 stack
+  ×3 → ×4 each
+- 3 sim-firmware controllers (Phase C) — paired 1:1 with Phase B
+- 1 unified board spec (Phase C.5) — 3 boards, pinmap+BOM+power+bringup
+
+F-CHIP-1/2/3 all stay 100% closure. F-CHIP-4 (consciousness Φ) stays
+non-measurable v1.x.
+
+Memory state at pivot:
+- foundry_baseline.md DELETED (was lock; user reversed)
+- autonomy_directive.md ACTIVE (no lock, no iter cap)
+- web_search_mandate.md ACTIVE (vendor-agnostic now)
+- canon_pointer.md ACTIVE (~/core/canon SSOT)
+- hexa_embedded_scope.md ACTIVE (current focus)
+
 ### Changed (2026-05-08 — RSC iter 21, **100% closure on measurable falsifiers**)
 
 - `verify/falsifier_check.hexa` — extended closure tracker to count

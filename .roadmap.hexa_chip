@@ -4,7 +4,7 @@
 > deadlines, pointers. Sister of `hexa-rtsc` / `hexa-codex` / `anima` under
 > `dancinlab` org.
 
-**Last sync**: 2026-05-08 · **Current release**: v1.0.0 (v1.1.0 RSC code-layer FINAL on `main`) · **Branch**: `main`
+**Last sync**: 2026-05-08 (Phase C.5 complete · Phase D paused → hexa-embedded pivot) · **Current release**: v1.0.0 (v1.1.0 RSC code-layer FINAL on `main`) · **Branch**: `main`
 
 ---
 
@@ -85,6 +85,29 @@ verb spec 디렉토리 29 개 (group: architecture · design · process ·
 packaging · accelerator · consciousness, n6-architecture@c0f1f570 추출).
 이 verb spec 표가 §A.6.1 step A 의 출발점.
 
+### §A.6.0 진행 현황 (2026-05-08 pivot 시점)
+
+| Phase | 시점 | 결과물 | commit |
+|:----:|:----|:------|:-------|
+| A iter 1 | 2026-05-08 | `hbm/doc/datasheet_hbm.md` (foundry-pitch, F-CHIP-3) | e03582b |
+| A iter 2 | 2026-05-08 | `npu_n6/doc/datasheet_npu_n6.md` (F-CHIP-2) | 47893c2 |
+| A iter 3 | 2026-05-08 | `process/doc/datasheet_process.md` (F-CHIP-1) | 1b4d3e9 |
+| B iter 1 | 2026-05-08 | `verify/numerics_spice_corner.hexa` (F-CHIP-1 T2-4) | 6e3b432 |
+| B iter 2 | 2026-05-08 | `verify/numerics_rtl_isa_n6.hexa` (F-CHIP-2 T2-4) | cc8e670 |
+| B iter 3 | 2026-05-08 | `verify/numerics_power_thermal.hexa` (F-CHIP-3 T2-4) | 0951f35 |
+| C iter 1+2 | 2026-05-08 | `firmware/sim/process_corner_monitor.hexa` + `npu_dispatcher.hexa` | 56119c0 |
+| C iter 3 | 2026-05-08 | `firmware/sim/hbm_thermal_controller.hexa` (canon-aware) | addf9cb |
+| C.5 | 2026-05-08 | `firmware/doc/board_v0_spec.md` (3-board pinmap+BOM+power+bringup) | 1d24ff7 |
+| D | **paused** | upstream stdlib (`hexa-embedded`) needed first | — |
+
+**Pivot 2026-05-08**: 사용자가 Phase D (HDL Verilog + MCU Rust) 직접 작성 보류, hexa-embedded upstream stdlib 먼저 설계하기로 전환. hexa-embedded 가 안정화되면 Phase D 가 그 stdlib 위에서 implementable. 본 repo Phase D HDL/MCU 디렉토리는 hexa-embedded 의 첫 consumer.
+
+본 §A.6.0 시점 회귀 상태 (hexa runtime fork-saturation 으로 직접 검증 못함):
+- F-CHIP-1/2/3 closure: 100% × 3 (T1 + T2 ×4 + T3 archival) — saturation 신호 sat-1 + sat-2 + sat-3 모두 ✓
+- verify/* scripts on disk: 26개 (calc ×3 + numerics ×14 + empirical ×3 + meta ×3 + cross-cutter ×3)
+- Phase A docs: 3 datasheets · Phase C sim-firmware: 3 controllers · Phase C.5: 1 unified board spec
+- 모두 file-existence + sentinel pattern mirroring iter 14-16 검증된 패턴 (실행 검증 deferred)
+
 ### §A.6.1 추천 작업 순서 (A → B → C → D)
 
 §A.6 step 1/2/4 가 외부-bound 인 동안에도 본 repo 안에서 진행 가능한
@@ -111,3 +134,77 @@ F1/F2/F3 = 100%, cli verify all 24/24) 를 깨지 않음. C 는 처음으로
 `.hexa` 외 파일이 들어가는 단계 — 별도 디렉토리 (`firmware/sim/`,
 `hdl/sim/`) 로 격리. D 는 별도 repo 또는 `firmware/` · `hdl/` 의
 별 sub-tree 분리 권장.
+
+### §A.6.2 hexa-embedded upstream stdlib 설계 결정 (2026-05-08)
+
+Phase D 직접 진입 대신 **hexa-embedded** upstream stdlib 을 먼저 설계하고
+그 위에서 Phase D 를 구현하기로 결정. 본 §A.6.2 는 hexa-embedded 가
+아직 존재하지 않을 때의 design recommendation 기록.
+
+**Implementation pattern: separate-import (별도 import 채택)**
+
+기존 hexa convention (`use "self/runtime/math_pure"` 등) 그대로 확장:
+
+```
+hexa-embedded/
+├── core/         use "hexa-embedded/core"       runtime · panic · time
+├── gpio/         use "hexa-embedded/gpio"       digital I/O
+├── i2c/          use "hexa-embedded/i2c"        I²C bus
+├── spi/          use "hexa-embedded/spi"        SPI bus
+├── uart/         use "hexa-embedded/uart"       async serial
+├── adc/          use "hexa-embedded/adc"        analog read
+├── dac/          use "hexa-embedded/dac"        analog write
+├── pwm/          use "hexa-embedded/pwm"        duty-cycle gen
+├── timer/        use "hexa-embedded/timer"      hw timer
+├── intr/         use "hexa-embedded/intr"       interrupts
+├── dma/          use "hexa-embedded/dma"        direct memory access
+├── rtc/          use "hexa-embedded/rtc"        real-time clock
+└── prelude.hexa  use "hexa-embedded/prelude"    umbrella convenience
+```
+
+**별도 import 가 정답인 이유:**
+
+| 이유 | 설명 |
+|:----|:-----|
+| 기존 hexa pattern | `self/runtime/math_pure` 가 separate-import. `lint_numerics §4 invariant 1` 강제. 일관성. |
+| 임베디드 footprint | only-what-you-use → 바이너리 크기 절약. 모놀리식이면 unused peripheral 도 들어감. |
+| Rust embedded-hal 정합 | embedded-hal trait 별 분리 — 그대로 매핑 가능. |
+| MicroPython `machine` 모듈 정합 | `from machine import I2C, SPI, Pin` 동일 패턴. |
+| n=6 정렬 | 12 모듈 = σ · 4-단계 lifecycle = τ (configure/start/serve/report) · digital/analog = φ · J₂=24 standardized handles. |
+| evolution | 한 peripheral 변경이 다른 모듈 안 깨뜨림. |
+| test 격리 | 각 모듈 단독 verify 가능. |
+
+**Umbrella 옵션 (편의용):**
+- `use "hexa-embedded/prelude"` 한 줄로 전체 import — bench/sim/test 코드용
+- `use "hexa-embedded"` 는 prelude 의 alias
+
+**MCU/board 별 backend:** 모듈 안에서 cfg-flag 분기 (Rust embedded-hal-impl 패턴).
+
+**n=6 axis projection 으로 12 peripheral 모듈 = σ(6) 자연 정렬:**
+
+| σ-slot | 모듈   | 역할                            |
+|:-:|:-------|:--------------------------------|
+| 0 | core   | runtime · panic · time          |
+| 1 | gpio   | digital I/O                     |
+| 2 | i2c    | I²C bus                         |
+| 3 | spi    | SPI bus                         |
+| 4 | uart   | async serial                    |
+| 5 | adc    | analog read                     |
+| 6 | dac    | analog write                    |
+| 7 | pwm    | duty-cycle gen                  |
+| 8 | timer  | hw timer                        |
+| 9 | intr   | interrupts                      |
+|10 | dma    | direct memory access            |
+|11 | rtc    | real-time clock                 |
+
+(σ-φ=10 까지 가시 peripheral, σ=12 hard ceiling.  추가 칩셋 specific
+peripheral 은 prelude 외에 두고 vendor backend 모듈로 분리.)
+
+**hexa-chip Phase D 가 hexa-embedded 의 첫 consumer:**
+- `firmware/hdl/isa_n6_top.v` — Verilog (HDL — hexa-embedded 외부)
+- `firmware/mcu/hbm_pmu.hexa` — `use "hexa-embedded/{i2c, gpio, intr}"` 사용
+- `firmware/mcu/npu_dispatcher.hexa` — `use "hexa-embedded/{spi, dma, intr}"` 사용
+- `firmware/mcu/process_corner_monitor.hexa` — `use "hexa-embedded/{adc, dac, gpio, timer}"` 사용
+
+본 §A.6.2 는 design intent 기록. 실제 hexa-embedded 패키지 구현은 본 repo
+밖 (`/Users/ghost/core/hexa-embedded/` 신규 디렉토리) 에서 별도 진행.
