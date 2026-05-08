@@ -17,6 +17,16 @@
 //   - back-pressure threshold: HBM4 → NPU = 2 TB/s ≫ NPU consume = 800 GB/s →
 //     never throttles unless macroblock count > σ(6) = 12.
 //   - layer epoch close emits IRQ when WB stage drains the descriptor.
+//
+// Phase D refactor: this sim-firmware is now a downstream consumer of
+// stdlib/hal v0.0.1.  Peripheral handles (spi/dma/intr/gpio) are opened
+// via the hal handshake at the top of main() instead of being inlined.
+
+use "stdlib/hal/core"
+use "stdlib/hal/spi"
+use "stdlib/hal/dma"
+use "stdlib/hal/intr"
+use "stdlib/hal/gpio"
 
 let mut RUN = 0
 let mut FAIL = 0
@@ -155,6 +165,23 @@ fn main() {
     println("")
     println("  Target HW (Phase D): Samsung Exynos AP NPU IP + STM32H7 host")
     println("  Sim scope: 24-instr ISA n=6 layer × τ=4 pipeline × σ-cascade roofline")
+    println("")
+
+    // ── stdlib/hal handshake (Phase D refactor) ──────────────────────
+    // Open the peripherals this controller conceptually drives:
+    //   spi   — layer-descriptor fetch from host MCU @ 50 MHz
+    //   dma   — peripheral → memory descriptor streaming
+    //   intr  — layer_done IRQ on WB drain (real-time priority)
+    //   gpio  — npu_busy strobe (visible on pin 2)
+    println("  [hal] opening stdlib/hal peripheral handles ...")
+    let spi_h   = spi_open(0, 0, MODE_0, 50000000)
+    let dma_h   = dma_open(0, DIR_PER_TO_MEM, WIDTH_WORD)
+    let intr_h  = intr_open(1, PRIO_REAL_T, "layer_done")
+    let gpio_h  = gpio_open(2, MODE_OUTPUT)
+    _check(spi_h  >= 0, "stdlib/hal spi_open OK",  "h=" + str(spi_h))
+    _check(dma_h  >= 0, "stdlib/hal dma_open OK",  "h=" + str(dma_h))
+    _check(intr_h >= 0, "stdlib/hal intr_open OK", "h=" + str(intr_h))
+    _check(gpio_h >= 0, "stdlib/hal gpio_open OK", "h=" + str(gpio_h))
     println("")
 
     check_layer_size_J2()

@@ -20,6 +20,18 @@
 // PASS = sim-firmware loop completes 12 wafer-die binnings with
 //        consistent speed-bin distribution (sat-2 within ±15% of 70% TT).
 // FAIL = no fault path — sim only emits warnings.
+//
+// Phase D refactor: this sim-firmware is now a downstream consumer of
+// stdlib/hal v0.0.1.  Peripheral handles (adc/dac/gpio/timer/intr) are
+// opened via the hal handshake at the top of main() instead of being
+// inlined as `[sim]` println stubs.
+
+use "stdlib/hal/core"
+use "stdlib/hal/adc"
+use "stdlib/hal/dac"
+use "stdlib/hal/gpio"
+use "stdlib/hal/timer"
+use "stdlib/hal/intr"
 
 let mut RUN = 0
 let mut FAIL = 0
@@ -173,6 +185,27 @@ fn main() {
     println("  Target HW (Phase D): Samsung Foundry FPGA SoC (8-ADC + 16-DAC + BIST)")
     println("  Sim scope: 12-die wafer batch (= σ(6)) classified into FF/FS/TT/SF/SS/TRIP")
     println("")
+
+    // ── stdlib/hal handshake (Phase D refactor) ──────────────────────
+    // Open the peripherals this controller conceptually drives:
+    //   adc   — wafer-test corner sensor channels
+    //   dac   — bias / Vdd sweep stimulus
+    //   gpio  — die-select / load-board strobe
+    //   timer — periodic per-die measurement tick (1 ms)
+    //   intr  — corner_done IRQ from BIST glue
+    println("  [hal] opening stdlib/hal peripheral handles ...")
+    let adc_h    = adc_open(0, 0)
+    let dac_h    = dac_open(0, 0)
+    let gpio_h   = gpio_open(13, MODE_OUTPUT)
+    let timer_h  = timer_open(0, MODE_PERIODIC, 1000)
+    let intr_h   = intr_open(0, PRIO_HIGH, "corner_done")
+    _check(adc_h   >= 0, "stdlib/hal adc_open OK",   "h=" + str(adc_h))
+    _check(dac_h   >= 0, "stdlib/hal dac_open OK",   "h=" + str(dac_h))
+    _check(gpio_h  >= 0, "stdlib/hal gpio_open OK",  "h=" + str(gpio_h))
+    _check(timer_h >= 0, "stdlib/hal timer_open OK", "h=" + str(timer_h))
+    _check(intr_h  >= 0, "stdlib/hal intr_open OK",  "h=" + str(intr_h))
+    println("")
+
     _print_results()
     println("")
 

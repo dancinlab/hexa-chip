@@ -24,6 +24,16 @@
 //   - Jacobi convergence in [N², N²·n] = [256, 1536] iters
 //   - DVFS pulldown engages when any layer T > 90 °C
 //   - CATTRIP latches at T_J ≥ 105 °C with ≤ 100 µs latency
+//
+// Phase D refactor: this sim-firmware is now a downstream consumer of
+// stdlib/hal v0.0.1.  Peripheral handles (i2c/gpio/intr/timer) are
+// opened via the hal handshake at the top of main() instead of inlined.
+
+use "stdlib/hal/core"
+use "stdlib/hal/i2c"
+use "stdlib/hal/gpio"
+use "stdlib/hal/intr"
+use "stdlib/hal/timer"
 
 let mut RUN = 0
 let mut FAIL = 0
@@ -222,6 +232,24 @@ fn main() {
     println("  Sim scope: 16-layer Jacobi thermal solver + DVFS + CATTRIP control loop")
     println("  Canon Mk.I anchor: Samsung HBM3E 12H 36 GB (2026)")
     println("")
+
+    // ── stdlib/hal handshake (Phase D refactor) ──────────────────────
+    // Open the peripherals this controller conceptually drives:
+    //   i2c   — in-stack thermal sensor readout @ 100 kHz standard
+    //   gpio  — DVFS strobe / CATTRIP latch line (pin 13)
+    //   intr  — cattrip vector @ HIGH priority (thermal-trip = crit)
+    //   timer — periodic 100 ms thermal-poll tick
+    println("  [hal] opening stdlib/hal peripheral handles ...")
+    let i2c_h    = i2c_open(0, 100000)
+    let gpio_h   = gpio_open(13, MODE_OUTPUT)
+    let intr_h   = intr_open(2, PRIO_HIGH, "cattrip")
+    let timer_h  = timer_open(0, MODE_PERIODIC, 100000)
+    _check(i2c_h   >= 0, "stdlib/hal i2c_open OK",   "h=" + str(i2c_h))
+    _check(gpio_h  >= 0, "stdlib/hal gpio_open OK",  "h=" + str(gpio_h))
+    _check(intr_h  >= 0, "stdlib/hal intr_open OK",  "h=" + str(intr_h))
+    _check(timer_h >= 0, "stdlib/hal timer_open OK", "h=" + str(timer_h))
+    println("")
+
     _print_sensors()
     println("")
 
