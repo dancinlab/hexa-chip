@@ -98,9 +98,13 @@ packaging · accelerator · consciousness, n6-architecture@c0f1f570 추출).
 | C iter 1+2 | 2026-05-08 | `firmware/sim/process_corner_monitor.hexa` + `npu_dispatcher.hexa` | 56119c0 |
 | C iter 3 | 2026-05-08 | `firmware/sim/hbm_thermal_controller.hexa` (canon-aware) | addf9cb |
 | C.5 | 2026-05-08 | `firmware/doc/board_v0_spec.md` (3-board pinmap+BOM+power+bringup) | 1d24ff7 |
-| D | **paused** | upstream stdlib (`hexa-embedded`) needed first | — |
+| D iter 1 | 2026-05-08 | `firmware/hdl/isa_n6_top.v` (F-CHIP-2 Verilog, XCZU7EV) | 8442524 |
+| D iter 2 | 2026-05-08 | `firmware/hdl/hbm_thermal_top.v` (F-CHIP-3 Verilog, XCKU040) | 25b0668 |
+| D refactor | 2026-05-08 | `firmware/sim/*.hexa` × 3 → stdlib/hal imports | c151607 |
+| D iter 3 | 2026-05-08 | `firmware/hdl/process_corner_top.v` (F-CHIP-1 Verilog, ECP5) | 7924f5c |
+| D iter 4 | next       | `firmware/mcu/*.hexa` MCU controllers using stdlib/hal | — |
 
-**Pivot 2026-05-08**: 사용자가 Phase D (HDL Verilog + MCU Rust) 직접 작성 보류, hexa-embedded upstream stdlib 먼저 설계하기로 전환. hexa-embedded 가 안정화되면 Phase D 가 그 stdlib 위에서 implementable. 본 repo Phase D HDL/MCU 디렉토리는 hexa-embedded 의 첫 consumer.
+**Pivot 2026-05-08**: 사용자가 Phase D (HDL Verilog + MCU Rust) 직접 작성 보류, hexa-embedded upstream stdlib 먼저 설계하기로 전환. hexa-embedded 가 안정화되면 Phase D 가 그 stdlib 위에서 implementable. 본 repo Phase D HDL 3 보드 (D iter 1-3) 완료 — Verilog top-levels 합성 가능 (Vivado 2024.1+ / Yosys-nextpnr ECP5 양 경로). MCU controllers (D iter 4) 가 stdlib/hal 의 첫 hexa-native consumer 가 됨.
 
 본 §A.6.0 시점 회귀 상태 (hexa runtime fork-saturation 으로 직접 검증 못함):
 - F-CHIP-1/2/3 closure: 100% × 3 (T1 + T2 ×4 + T3 archival) — saturation 신호 sat-1 + sat-2 + sat-3 모두 ✓

@@ -5,6 +5,44 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — Phase D iter 1-3 + refactor)
+
+Phase D HDL synthesizable Verilog top-levels for the 3 measurable
+falsifiers, paired 1:1 with Phase C sim-firmware:
+
+- `firmware/hdl/isa_n6_top.v` (F-CHIP-2 NPU dispatcher, XCZU7EV
+  target, 317 LOC; commit 8442524) — Vivado 2024.1+ synthesizable,
+  MMCM 50→100 MHz, AXI4-Lite slave CSR, AXI4 master HBM data path,
+  4-stage τ pipeline (FETCH/DECODE/EXEC/WB), 24-instr ISA n=6
+  decoder mirroring numerics_rtl_isa_n6, J₂=24 layer-done IRQ,
+  200M-cycle safety watchdog.
+- `firmware/hdl/hbm_thermal_top.v` (F-CHIP-3 HBM thermal, XCKU040
+  target, 319 LOC; commit 25b0668) — 16-layer thermal sensor FSM
+  (SAMPLE→CONVERT→FILTER→REPORT = τ stages), DVFS state output,
+  CATTRIP latch ≤ 100 µs.
+- `firmware/hdl/process_corner_top.v` (F-CHIP-1 wafer corner, ECP5
+  LFE5UM-85F target, 395 LOC; commit 7924f5c) — Yosys/nextpnr
+  synth path, EHXPLLL clock prim, 4-stage τ FSM (SETUP_BIAS→
+  SWEEP_DAC→SAMPLE_ADC→CLASSIFY), σ=12 die counter, 6-bucket
+  classifier mirroring sim, JTAG BIST shim.
+
+Phase D refactor (commit c151607): `firmware/sim/{process_corner_monitor,
+npu_dispatcher,hbm_thermal_controller}.hexa` now `use "stdlib/hal/<X>"`
+imports; 13 new _check assertions verify hal handshake (5+4+4 across
+files, +88 LOC additive). Sim-firmware becomes the first downstream
+consumer of stdlib/hal v0.0.1.
+
+Three FPGA target families exercised: Xilinx Zynq UltraScale+ (PS+PL
+integration), Xilinx Kintex UltraScale (mid-range PL), Lattice ECP5
+(open-source Yosys path). All three Verilog top-levels share the
+same template: MMCM/PLL clock gen, AXI4-Lite read-only CSR (version
++ state + counters + watchdog), safety watchdog, sim/synth ifdef
+bookend, default_nettype none/wire bookend, parameter SIGMA=12
+TAU=4 PHI=2 J2=24, 5-falsifier comment block.
+
+Phase E (schematic / KiCad PCB / physical board procurement
+~$25k) deferred per .roadmap §A.6 step 2 (foundry / IDM MOU + funding).
+
 ### Pivot record (2026-05-08 — Phase D paused → hexa-embedded upstream)
 
 User pivoted mid-Phase-D (HDL Verilog + MCU Rust skeleton) to design
