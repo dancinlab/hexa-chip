@@ -5,6 +5,79 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — Phase E iter 2)
+
+Real KiCad 8 project skeletons + per-board power-chain spec — Phase E G1
+moves from `pending` to `started`:
+
+- `firmware/board/fw01_corner/fw01_corner.kicad_pro` — KiCad 8 JSON
+  project (4 netclasses: Default / Power / SPI / Analog; design rules
+  for 4-layer FR-4; netclass patterns mapping power, SPI, ADC/DAC nets;
+  text_variables BOARD_ID/FALSIFIER/REV/DATE).
+- `firmware/board/fw02_npu/fw02_npu.kicad_pro` — KiCad 8 JSON (5
+  netclasses: Default / Power / PCIe_Gen5 / DDR4 / AXI; design rules
+  for 8-layer Megtron; netclass patterns for PCIe TX/RX/REFCLK, DDR4
+  DQ/ADDR/CTL, AXI4_INST, APB_CSR).
+- `firmware/board/fw03_hbm/fw03_hbm.kicad_pro` — KiCad 8 JSON (6
+  netclasses: Default / Power_HiCurrent / Power_LoCurrent / HBM4_PHY /
+  HBM4_CK / I2C_SMBus; design rules for 10-layer HDI with buried/blind
+  via support; netclass patterns mapping HBM4_DQ / DQS / CK and the
+  thermal sense bus).
+- `firmware/board/fw0{1,2,3}/power_chain.md` × 3 — detailed power
+  integrity design per board:
+  - rail tree with current budget per node (typ + peak),
+    regulator selection rationale (V_in, I_max, η, f_sw, decoupling),
+  - per-IC decoupling network rollup (bulk + bypass count),
+  - power-on sequencer ASCII timing (rail order + ramp times +
+    PG cascade rules + brownout detection),
+  - rail noise / Z_target estimate vs spec (PSRR, ripple p-p, target
+    band) — explicitly flagged tight rails: FW-03 +1V10 (1.4× margin),
+    FW-02 +0V85 (1.5× margin),
+  - FMEA-lite table (failure mode → detection → response) for each
+    rail, including CATTRIP override on FW-03,
+  - PI verification path (HyperLynx PI/SI sweeps, stress tests,
+    sequence violation injection) deferred to gate G2/G5.
+- `firmware/board/POWER_INTEGRITY.md` — cross-board PI rollup:
+  aggregate power budget (39 W typ / 64 W peak across 3 boards),
+  per-board regulator stack summary, critical Z_target rails ranked
+  by margin, decoupling rollup (~1015 caps total / ~$83 BOM), common
+  sequencing principles (6 rules), board-specific lessons, gate
+  impact mapping.
+- `firmware/board/README.md` — layout updated to reflect 8 new files;
+  G1 status flipped to `started`; iteration log section added (iter
+  1 → iter 2).
+
+This iter does **not** require web search of vendor numbers — all
+regulator part numbers and rail voltages were already published in
+Phase E iter 1 (`schematic_paper.md`) and `firmware/doc/board_v0_spec.md`.
+Iter 2 expands the documented design to PCB-CAD-loadable form
+(`.kicad_pro`) and adds the PI engineering detail that gate G2 needs as
+input.
+
+Phase E G1 (KiCad schematic land) now requires only schematic capture
+(`.kicad_sch`) drawing — engineer-week per board, no foundry MOU
+dependency. G2 (HyperLynx PI / SI sweep) is the next licence-bound gate
+(~$5–8 K licence + 2 engineer-weeks per board).
+
+### Added (2026-05-08 — Phase E iter 1)
+
+Phase E paper-tier hardware design artifacts (commit 1322c97):
+
+- `firmware/board/README.md` — Phase E directory overview + 5-gate plan
+  (G1 KiCad schematic → G2 PCB layout → G3 Gerber → G4 BOM lock → G5
+  physical pilot).
+- `firmware/board/bom_master.csv` — aggregated 3-board BOM with
+  candidate vendor parts, qty, unit cost, lead time.
+- `firmware/board/fw0{1,2,3}/schematic_paper.md` × 3 — ASCII block-level
+  schematics including pinmap excerpts, power rail tree, net list
+  (paper), connector table, passive count estimate, PCB footprint
+  estimate (layers / stack-up / impedance / length matching), and
+  cross-references to Phase D HDL + MCU + spec docs.
+- `firmware/board/fw0{1,2,3}/kicad_project.txt` × 3 — KiCad project
+  intent stubs reserving filenames for `.kicad_pro` / `.kicad_sch` /
+  `.kicad_pcb` / `-bom.csv` / `.kicad_prl` (KiCad 8.0+ s-expression
+  format target). Iter 2 replaces these with real `.kicad_pro` JSON.
+
 ### Added (2026-05-08 — Phase D iter 1-3 + refactor)
 
 Phase D HDL synthesizable Verilog top-levels for the 3 measurable

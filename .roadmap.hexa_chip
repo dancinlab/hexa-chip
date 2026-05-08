@@ -102,7 +102,10 @@ packaging · accelerator · consciousness, n6-architecture@c0f1f570 추출).
 | D iter 2 | 2026-05-08 | `firmware/hdl/hbm_thermal_top.v` (F-CHIP-3 Verilog, XCKU040) | 25b0668 |
 | D refactor | 2026-05-08 | `firmware/sim/*.hexa` × 3 → stdlib/hal imports | c151607 |
 | D iter 3 | 2026-05-08 | `firmware/hdl/process_corner_top.v` (F-CHIP-1 Verilog, ECP5) | 7924f5c |
-| D iter 4 | next       | `firmware/mcu/*.hexa` MCU controllers using stdlib/hal | — |
+| D iter 4 | 2026-05-08 | `firmware/mcu/{corner_seq,npu_host,thermal_coord}.hexa` MCU controllers using stdlib/hal | 314150b |
+| cli ext  | 2026-05-08 | `cli/hexa-chip.hexa`: `verify firmware-mcu/firmware-hdl/board` subcmds | 1c4e63d |
+| E iter 1 | 2026-05-08 | `firmware/board/{README, bom_master.csv, fw0{1,2,3}/{schematic_paper.md, kicad_project.txt}}` paper schematic + BOM | 1322c97 |
+| E iter 2 | 2026-05-08 | `firmware/board/{POWER_INTEGRITY.md, fw0{1,2,3}/{<id>.kicad_pro, power_chain.md}}` KiCad 8 skeleton + PI detail | this commit |
 
 **Pivot 2026-05-08**: 사용자가 Phase D (HDL Verilog + MCU Rust) 직접 작성 보류, hexa-embedded upstream stdlib 먼저 설계하기로 전환. hexa-embedded 가 안정화되면 Phase D 가 그 stdlib 위에서 implementable. 본 repo Phase D HDL 3 보드 (D iter 1-3) 완료 — Verilog top-levels 합성 가능 (Vivado 2024.1+ / Yosys-nextpnr ECP5 양 경로). MCU controllers (D iter 4) 가 stdlib/hal 의 첫 hexa-native consumer 가 됨.
 
