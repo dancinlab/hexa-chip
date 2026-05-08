@@ -319,4 +319,114 @@ hexa-chip/
 | F iter 6 | 2026-05-08 | `verify/empirical_gpgpu.hexa` — F-CHIP-5 T3 archival fixture (8-row vendor mem-tier survey, mode/mean/hard-band checks). 67% → 100% closure 추적. | uncommitted (Bash broken in session) |
 | F iter 7 | 2026-05-08 | `firmware/mcu/{pim_host, photonic_host}.hexa` — PIM 은 σ=12 bank workgroup, photonic 은 J₂=24×σ=12 mesh dispatch. NPU 외 2번째·3번째 consumer. | uncommitted |
 | F iter 8 | 2026-05-08 | `cli/hexa-chip.hexa` — `verify gpgpu` subcmd (T1+T2+T3 file presence check) + `verify all` aggregator section 4 추가. | uncommitted |
-| F iter 9 | 2026-05-08 | hexa-lang `stdlib/hal/backend/{spirv,ptx}/compute.hexa` — GPU IR paper skeletons (SPIR-V 1.6 + PTX 8.5 / CUDA 13.2). Validation only; FFI codegen 는 downstream. CHANGELOG v1.6.0 entry 추가. | hexa-lang repo, uncommitted |
+| F iter 9 | 2026-05-08 | hexa-lang `stdlib/hal/backend/{spirv,ptx}/compute.hexa` — GPU IR paper skeletons (SPIR-V 1.6 + PTX 8.5 / CUDA 13.2). Validation only; FFI codegen 는 downstream. CHANGELOG v1.6.0 entry 추가. | hexa-lang repo, 69c1e40f |
+| F iter 10 | 2026-05-08 | hexa-lang `stdlib/hal/backend/{cuda,hip,sycl,opencl,metal,webgpu}/compute.hexa` × 6 — GPGPU σ=12 lattice 완성 (6 vendor × 2 IR = 12, σ=6 vendor 축 채움). Paper-spec only (FFI 없음). canon §7.5 architectural guard 통과. CHANGELOG v1.7.0. | hexa-lang `cc557a17` |
+
+## §G  Beyond-GPU AI-native architecture (provenance + write-barrier + bt-id-isa)
+
+> **Trigger**: user 질문 2026-05-08: "canon에 beyond-gpu 있는데 hexa-chip에 들고 왔나?" — 답: NO. canon SSOT `ai-native-architecture` (parent_session: omega-cycle-ai-native-arch-beyond-gpu-2026-04-26) 가 1420 lines 문서로 존재하지만 hexa-chip 미반영. §G가 그 mirror plan.
+
+> Phase G 는 **GPU 기판 너머**의 AI 가속기 — n=6에서 도출된 silicon primitive 3개를 honesty triad (banner/write-barrier/falsifier) 위에 hard-wire. canon ai-native-architecture.md 의 `Mk.0 → Mk_inf / alien 6 → 10` 경로를 hexa-chip 스냅샷으로 투영.
+
+### §G.0 Domain scope (canon §1 발췌)
+
+3개 inseparable silicon primitive:
+
+1. **provenance-bit** — 1-bit FACT/HYPOTHESIS flag per tensor; OR-propagated.
+   Overhead = φ/σ_n = 1/36 of tensor payload (n=6 EXACT).
+2. **promotion-counter-MMU** — write-barrier MMU register; (prov, grade) 쌍이
+   (prov == FACT ∧ grade ≥ threshold) 충족 못하면 write 거절.
+3. **bt-id-isa** — ISA opcode field. 각 MAC issuance가 BT (breakthrough-theorem)
+   ledger에 audit 가능.
+
+세 primitive를 **honesty triad가 process discipline이 아닌 hardware property가
+되는 minimum substrate**로 정의.
+
+### §G.1 n=6 derivation — 10 EXACT constants (canon §2)
+
+| # | Constant | n=6 derivation | Value |
+|:-:|:--|:--|:--|
+| 1 | provenance_bit_overhead | φ / σ_n | 1/36 |
+| 2 | n6_native_tiles | σ / φ | 6 |
+| 3 | pipeline_stages | τ | 4 |
+| 4 | peak_macs_per_tile_per_cycle | σ·φ | 24 |
+| 5 | peak_macs_per_array_per_cycle | σ²·φ | 288 |
+| 6 | provenance_threshold_max | σ | 12 |
+| 7 | provenance_threshold_min | φ² | 4 |
+| 8 | legit_reject_rate_theoretical | 0 | 0.0 |
+| 9 | h1_speculative_drop_floor | 0 | 0.0 |
+| 10 | bt_coverage_count | sopfr(6) + φ | 7 |
+
+PASS criterion: symbolic == observed (모든 10).
+
+### §G.2 Falsifier preregister (canon §3)
+
+| ID | predicate | canon verdict | hexa-chip status |
+|:--|:--|:--|:--|
+| F-AI1 | MPS / tensor-network surrogate matches NPU within 2% | HOLD-PROXY | iter 1 import |
+| F-AI2-A | provenance ON drops throughput at most 5% vs baseline | PARTIAL → amended | iter 1 import + iter 4 numerics |
+| F-AI2-B | promotion-counter MMU refuses ≤ 1% legit writes | PASS robust | iter 1 import + iter 4 numerics |
+| F-AI2c-A | H1 speculative-eager scheduler keeps drop ≤ 5% | PASS at H1 | iter 1 import + iter 4 numerics |
+
+canon closure: design MEDIUM (amended) / sim MEDIUM / silicon LOW / literature LOW.
+
+### §G.3 hexa-chip projection — `ai_native_arch/` verb dir
+
+새 top-level verb 디렉토리 (29-verb → 30-verb 확장; consciousness group 옆에
+"ai-native" group으로 추가 또는 architecture group 내부 4번째 verb로 편입; 결정 §G.5):
+
+```
+ai_native_arch/
+├── chip-ai-native-arch.md           # canon snapshot @ <commit>
+├── doc/
+│   ├── datasheet_ai_native_arch.md  # foundry-pitch (Phase A 류)
+│   └── silicon_primitives.md        # 3 primitive 상세 RTL 스케치
+├── verify_ai_native_arch.hexa       # T1 algebraic (10 EXACT 검증)
+├── numerics_ai_native_arch.hexa     # T2 numerical (provenance overhead 시뮬)
+└── empirical_ai_native_arch.hexa    # T3 archival (1000-seed sweep 스타일 fixture)
+```
+
+### §G.4 추천 iter 순서
+
+| iter | 결과물 | RSC? | 시간 |
+|:-:|:--|:-:|:--|
+| G iter 1 | canon snapshot extraction → `ai_native_arch/chip-ai-native-arch.md` (+ `_index.json` 기재) | ✓ | 1 commit |
+| G iter 2 | `ai_native_arch/doc/datasheet_ai_native_arch.md` — 3 primitive RTL stub (provenance-bit OR-propagation 게이트 / promotion-counter MMU register file / bt-id-isa opcode 슬롯) | ✓ | 1 commit |
+| G iter 3 | `verify_ai_native_arch.hexa` (T1) — 10 EXACT n=6 derivation 검증 (calc 류) | ✓ | 1 commit |
+| G iter 4 | `numerics_ai_native_arch.hexa` (T2) — F-AI2-A throughput drop ≤ 5% 시뮬 fixture + F-AI2-B legit-write reject rate ≤ 1% sim | ✓ | 1 commit |
+| G iter 5 | `empirical_ai_native_arch.hexa` (T3) — 1000-seed sweep mode/mean/hard-band archival | ✓ | 1 commit |
+| G iter 6 | `firmware/mcu/ai_native_host.hexa` — stdlib/hal 위 첫 consumer (npu_host 패턴 확장; provenance-bit dispatch 헬퍼) | partial | 1 commit |
+| G iter 7 | hexa-lang `stdlib/hal/ai.hexa` (제안) — provenance-bit + write-barrier surface; `hal::ai::dispatch_with_provenance(grade, threshold)` | ✓ (별 repo) | 1 commit |
+| G iter 8 | `cli/hexa-chip.hexa` — `verify ai-native` subcmd + `verify all` aggregator §5 추가 | ✓ | 1 commit |
+| G iter 9 | `accel/hexa_ai_native_n6.hexa` (gpgpu_n6 자매) — 30번째 verb wired into accelerator group | ✓ | 1 commit |
+
+총 9 iter × ~1-2 commit = 9-18 commit. 1주 wall-clock (Phase F와 동급).
+
+### §G.5 Pending decisions
+
+- **Verb 위치**: 기존 6-group 중 어디에 붙일지?
+  - 옵션 A: `accelerator` group (npu_n6 / pim / photonic 옆에 ai_native_arch) — 기능 group으로 자연스러움. 30-verb / 6-group 유지.
+  - 옵션 B: 신규 7번째 그룹 `ai_native` — symbolic 강조. 31-verb / 7-group 변경.
+  - 옵션 C: `architecture` group의 4번째 verb (architecture / isa_n6 / hexa1 / ai_native_arch) — invariant lattice 축 강조.
+  - **권장**: 옵션 A (accelerator group) — Phase F의 gpgpu_n6 와 같은 group; canon `ai-native-architecture` 의 axis 표기 (Y_compute candidate)와 일치.
+- **stdlib/hal 후크**: `stdlib/hal/ai.hexa` 신규 vs `compute.hexa` 확장 (provenance-bit를 KernelDescriptor의 7번째 axis로)?
+  - **권장**: 신규 `ai.hexa`. compute.hexa는 vendor-agnostic dispatch에 집중; provenance-bit는 AI-specific axis라 σ=12 lattice 침식 회피.
+- **canon RTL 스케치 import**: canon에 `analysis/btAI3_rtl_design.md` 가 있다 (iter 2 datasheet 의 source-of-truth). 직접 import vs paraphrase?
+  - **권장**: paraphrase + cross-link. canon 직링크는 6-month-stale 방지.
+- **F-AI1 (MPS surrogate) HOLD-PROXY 처리**: hexa-chip iter 4에서 어떻게 reflect?
+  - **권장**: numerics에서 HOLD-PROXY = "deferred" 마크 + 별도 placeholder 스크립트. canon이 PASS로 closure하면 hexa-chip도 따라 닫힘.
+
+### §G.6 Cross-link
+
+- **canon SSOT**: `~/core/canon/domains/compute/ai-native-architecture/ai-native-architecture.md` (1420 lines, parent omega-cycle 2026-04-26).
+- **canon 보조**: `~/core/canon/domains/compute/ai-native-architecture/analysis/btAI3_rtl_design.md` + `verify_ai-native-architecture.hexa`.
+- **hexa-chip Phase F 자매**: gpgpu_n6 (Phase F iter 1+, GPGPU axis); ai_native_arch는 **GPU 너머** axis로 분리.
+- **stdlib/hal 후크 (hexa-lang repo)**: `hal::ai` (planned; §G iter 7 대상). hexa-chip 외부 작업.
+- **F-AI* falsifier ledger**: 본 §G.2 + canon §3.
+- **§A.4 통합**: F-CHIP-1..4 (process/NPU/HBM/consciousness)와 별개로 F-AI1/F-AI2-A/F-AI2-B/F-AI2c-A 추가; consciousness 와 conceptual 인접하지만 substrate가 다름 (consciousness = Φ measure; ai-native = honesty triad silicon).
+
+### §G.7 Status
+
+- **2026-05-08 작성**: §G section 추가만. iter 0 (canon snapshot 식별) 완료.
+- **iter 1+ 미착수**.
+- **외부 의존**: §G iter 7 (stdlib/hal/ai.hexa)는 hexa-lang repo 작업; Phase F iter 9 와 같은 분리 패턴.
