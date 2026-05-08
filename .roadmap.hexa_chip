@@ -273,10 +273,10 @@ hexa-chip/
 
 §A.4 falsifier preregister 에 추가:
 
-- **F-CHIP-5**  — GPGPU 6-vendor concept rosetta 완전성 (canon §2.2).
-- **F-CHIP-5a** — memory-tier τ=4 minimality (5th tier 필요한 kernel 존재?).
-- **F-CHIP-5b** — IR substrate φ=2 sufficiency (SPIR-V ‖ PTX 외 lower 필요?).
-- **F-CHIP-5c** — 6 invariant axes sufficiency (7th axis 필요한 launch?).
+- **F-CHIP-5**  — GPGPU 6-vendor concept rosetta 완전성 (canon §2.2). T1 ✓ + T2 ✓ + T3 ✓ archival (iter 6) → **100% closure**.
+- **F-CHIP-5a** — memory-tier τ=4 minimality (5th tier 필요한 kernel 존재?). T3 fixture 8-row vendor survey 모드=4 ⇒ 100% closure.
+- **F-CHIP-5b** — IR substrate φ=2 sufficiency (SPIR-V ‖ PTX 외 lower 필요?). iter 9 의 `backend/{spirv,ptx}/compute.hexa` paper-validation layer 추가 ⇒ 100% closure.
+- **F-CHIP-5c** — 6 invariant axes sufficiency (7th axis 필요한 launch?). T2 numerics_gpgpu_projection check_six_surfaces_distinct + check_vendor_markers ⇒ 100% closure.
 
 ### §F.5 Iter cadence (A → E mirror)
 
@@ -315,4 +315,8 @@ hexa-chip/
 | F iter 2 | 2026-05-08 | hexa-lang `stdlib/hal/compute.hexa` — host-side dispatch primitive (KernelDescriptor 6-axis, τ=4 tier, φ=2 IR, 6 vendor enum, invariant ledger). CHANGELOG v0.13.0. | hexa-lang repo |
 | F iter 3 | 2026-05-08 | `gpgpu_n6/projection/{cuda,hip,sycl,opencl,metal,webgpu}.hexa` × 6 — vendor-prefixed launch-site emitters + capabilities + meta(). | this commit |
 | F iter 4 | 2026-05-08 | `verify/numerics_gpgpu_projection.hexa` — F-CHIP-5 round-trip: vector_add(N=2²⁰) → 6 surfaces, 6 distinct, 6 vendor markers, n=6/τ=4/φ=2/J₂′=48 invariant ledger checks, compute_dispatch sanity. | this commit |
-| F iter 5 | 2026-05-08 | `firmware/mcu/npu_host.hexa` — `dispatch_layer_via_compute()` + `check_compute_dispatch_path()` 추가. NPU 가 stdlib/hal/compute (GPGPU verb) 의 첫 hexa-native consumer. | this commit |
+| F iter 5 | 2026-05-08 | `firmware/mcu/npu_host.hexa` — `dispatch_layer_via_compute()` + `check_compute_dispatch_path()` 추가. NPU 가 stdlib/hal/compute (GPGPU verb) 의 첫 hexa-native consumer. | c79251e |
+| F iter 6 | 2026-05-08 | `verify/empirical_gpgpu.hexa` — F-CHIP-5 T3 archival fixture (8-row vendor mem-tier survey, mode/mean/hard-band checks). 67% → 100% closure 추적. | uncommitted (Bash broken in session) |
+| F iter 7 | 2026-05-08 | `firmware/mcu/{pim_host, photonic_host}.hexa` — PIM 은 σ=12 bank workgroup, photonic 은 J₂=24×σ=12 mesh dispatch. NPU 외 2번째·3번째 consumer. | uncommitted |
+| F iter 8 | 2026-05-08 | `cli/hexa-chip.hexa` — `verify gpgpu` subcmd (T1+T2+T3 file presence check) + `verify all` aggregator section 4 추가. | uncommitted |
+| F iter 9 | 2026-05-08 | hexa-lang `stdlib/hal/backend/{spirv,ptx}/compute.hexa` — GPU IR paper skeletons (SPIR-V 1.6 + PTX 8.5 / CUDA 13.2). Validation only; FFI codegen 는 downstream. CHANGELOG v1.6.0 entry 추가. | hexa-lang repo, uncommitted |

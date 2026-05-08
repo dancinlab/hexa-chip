@@ -261,6 +261,8 @@ let mut _AGG_HDL_PRESENT = 0
 let mut _AGG_HDL_TOTAL = 0
 let mut _AGG_BOARD_PRESENT = 0
 let mut _AGG_BOARD_TOTAL = 0
+let mut _AGG_GPGPU_PRESENT = 0
+let mut _AGG_GPGPU_TOTAL = 0
 
 fn _run_verify_firmware_mcu(a: [str], aggregating: bool) -> str {
     let dir = HC + "/firmware/mcu"
@@ -495,7 +497,69 @@ fn cmd_verify_board(a: [str]) {
     // board artifacts — emit verdict + audit but return cleanly so dispatcher continues.
 }
 
-// ─── verify all (Phase D + Phase E aggregator) ───
+// ─── verify gpgpu (Phase F GPGPU programming-model verb) ───
+
+fn _run_verify_gpgpu(a: [str], aggregating: bool) -> str {
+    // Phase F GPGPU verb artifacts: T1 (verb dir verify) + T2 (projection
+    // numerics) + T3 (empirical fixture). Mirrors falsifier-tier pattern
+    // from F-CHIP-1/2/3 closure (T1 + T2 + T3).
+    let artifacts = [
+        HC + "/gpgpu_n6/verify_chip-gpgpu-n6.hexa",          // T1: lattice
+        HC + "/verify/numerics_gpgpu_projection.hexa",       // T2: F-CHIP-5 numerics
+        HC + "/verify/empirical_gpgpu.hexa"                  // T3: F-CHIP-5 empirical
+    ]
+
+    let mut present = 0
+    let total = artifacts.len()
+    let mut failures: [str] = []
+
+    if json_mode(a) == false {
+        println("hexa-chip verify gpgpu — Phase F GPGPU verb (F-CHIP-5 T1+T2+T3)")
+        println("")
+    }
+
+    for f in artifacts {
+        if _file_exists(f) {
+            present = present + 1
+            if json_mode(a) == false { println("  [PASS] " + f) }
+        } else {
+            failures = failures + [f]
+            if json_mode(a) == false { println("  [FAIL] " + f + " (missing)") }
+        }
+    }
+
+    let mut verdict = "PASS"
+    if failures.len() > 0 { verdict = "FAIL" }
+
+    _AGG_GPGPU_PRESENT = present
+    _AGG_GPGPU_TOTAL = total
+
+    if json_mode(a) && aggregating == false {
+        let js = "{\"hexa_chip\":\"" + VERSION + "\",\"subcmd\":\"verify-gpgpu\",\"present\":" +
+                 str(present) + ",\"total\":" + str(total) + ",\"verdict\":\"" + verdict + "\"}"
+        println(js)
+    } else if json_mode(a) == false {
+        println("")
+        println("  present: " + str(present) + "/" + str(total))
+        if verdict == "PASS" {
+            println("__HEXA_CHIP_VERIFY_GPGPU__ PASS")
+        } else {
+            println("__HEXA_CHIP_VERIFY_GPGPU__ FAIL")
+        }
+    }
+
+    return verdict
+}
+
+fn cmd_verify_gpgpu(a: [str]) {
+    let verdict = _run_verify_gpgpu(a, false)
+    let mut ec = 0
+    if verdict == "FAIL" { ec = 1 }
+    _audit("verify-gpgpu", "", ec)
+    if ec != 0 { exit(ec) }
+}
+
+// ─── verify all (Phase D + Phase E + Phase F aggregator) ───
 
 fn cmd_verify_all(a: [str]) {
     let json = json_mode(a)
@@ -503,7 +567,7 @@ fn cmd_verify_all(a: [str]) {
 
     if json == false {
         println("============================================================")
-        println(" hexa-chip verify all — Phase D + Phase E artifact sweep")
+        println(" hexa-chip verify all — Phase D + Phase E + Phase F sweep")
         println("============================================================")
         println("")
     }
@@ -532,15 +596,26 @@ fn cmd_verify_all(a: [str]) {
     let v_board = _run_verify_board(a, true)
     if v_board == "FAIL" { overall = "FAIL" }
 
-    let total_present = _AGG_MCU_PRESENT + _AGG_HDL_PRESENT + _AGG_BOARD_PRESENT
-    let total_total = _AGG_MCU_TOTAL + _AGG_HDL_TOTAL + _AGG_BOARD_TOTAL
+    if json == false {
+        println("")
+        println("------------------------------------------------------------")
+        println("")
+    }
+
+    // Section 4: gpgpu (Phase F)
+    let v_gpgpu = _run_verify_gpgpu(a, true)
+    if v_gpgpu == "FAIL" { overall = "FAIL" }
+
+    let total_present = _AGG_MCU_PRESENT + _AGG_HDL_PRESENT + _AGG_BOARD_PRESENT + _AGG_GPGPU_PRESENT
+    let total_total = _AGG_MCU_TOTAL + _AGG_HDL_TOTAL + _AGG_BOARD_TOTAL + _AGG_GPGPU_TOTAL
 
     if json {
         let mut js = "{\"hexa_chip\":\"" + VERSION + "\",\"subcmd\":\"verify-all\","
         js = js + "\"sections\":["
         js = js + "{\"name\":\"firmware-mcu\",\"verdict\":\"" + v_mcu + "\",\"present\":" + str(_AGG_MCU_PRESENT) + ",\"total\":" + str(_AGG_MCU_TOTAL) + "},"
         js = js + "{\"name\":\"firmware-hdl\",\"verdict\":\"" + v_hdl + "\",\"present\":" + str(_AGG_HDL_PRESENT) + ",\"total\":" + str(_AGG_HDL_TOTAL) + "},"
-        js = js + "{\"name\":\"board\",\"verdict\":\"" + v_board + "\",\"present\":" + str(_AGG_BOARD_PRESENT) + ",\"total\":" + str(_AGG_BOARD_TOTAL) + "}"
+        js = js + "{\"name\":\"board\",\"verdict\":\"" + v_board + "\",\"present\":" + str(_AGG_BOARD_PRESENT) + ",\"total\":" + str(_AGG_BOARD_TOTAL) + "},"
+        js = js + "{\"name\":\"gpgpu\",\"verdict\":\"" + v_gpgpu + "\",\"present\":" + str(_AGG_GPGPU_PRESENT) + ",\"total\":" + str(_AGG_GPGPU_TOTAL) + "}"
         js = js + "],\"total_present\":" + str(total_present) + ",\"total_total\":" + str(total_total) + ",\"verdict\":\"" + overall + "\"}"
         println(js)
     } else {
@@ -551,6 +626,7 @@ fn cmd_verify_all(a: [str]) {
         println("  firmware-mcu : " + v_mcu + "   (" + str(_AGG_MCU_PRESENT) + "/" + str(_AGG_MCU_TOTAL) + ")")
         println("  firmware-hdl : " + v_hdl + "   (" + str(_AGG_HDL_PRESENT) + "/" + str(_AGG_HDL_TOTAL) + ")")
         println("  board        : " + v_board + "   (" + str(_AGG_BOARD_PRESENT) + "/" + str(_AGG_BOARD_TOTAL) + ")")
+        println("  gpgpu        : " + v_gpgpu + "   (" + str(_AGG_GPGPU_PRESENT) + "/" + str(_AGG_GPGPU_TOTAL) + ")")
         println("  -----------------------------------")
         println("  TOTAL        : " + overall + "   (" + str(total_present) + "/" + str(total_total) + ")")
         if overall == "PASS" {
@@ -599,11 +675,12 @@ fn cmd_help() {
     println("  show <verb>     echo spec path for a single verb")
     println("  selftest        verify all 29 verb dirs present")
     println("")
-    println("verify subcommands (Phase D + Phase E artifact sweeps):")
+    println("verify subcommands (Phase D + Phase E + Phase F artifact sweeps):")
     println("  verify firmware-mcu    enumerate firmware/mcu/*.hexa controllers")
     println("  verify firmware-hdl    enumerate firmware/hdl/*.v Verilog top-levels")
     println("  verify board           Phase E paper schematics + KiCad pro + power chain")
-    println("  verify all             aggregate firmware-mcu + firmware-hdl + board")
+    println("  verify gpgpu           Phase F GPGPU verb (F-CHIP-5 T1 + T2 + T3)")
+    println("  verify all             aggregate firmware-mcu + firmware-hdl + board + gpgpu")
     println("  verify <other>         delegated to verify/cli.hexa unified dispatcher")
     println("")
     println("global flags:")
@@ -670,6 +747,7 @@ fn main() {
             if target == "firmware-mcu" { cmd_verify_firmware_mcu(a); return }
             if target == "firmware-hdl" { cmd_verify_firmware_hdl(a); return }
             if target == "board"        { cmd_verify_board(a); return }
+            if target == "gpgpu"        { cmd_verify_gpgpu(a); return }
             if target == "all"          { cmd_verify_all(a); return }
         }
         // delegate to existing verify/cli.hexa for other targets
