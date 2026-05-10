@@ -7,6 +7,7 @@
 > `canon@c0f1f570` (2026-05-06), organised into **7 sister groups**
 > mirroring the Korean fab heritage stack (Samsung·SK·Hynix·DRAM/HBM lineage).
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20102598.svg)](https://doi.org/10.5281/zenodo.20102598)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.0-informational.svg)](CHANGELOG.md)
 [![Verbs: 28 / 7 groups](https://img.shields.io/badge/verbs-28%20%2F%207%20groups-blue.svg)](#verbs)
