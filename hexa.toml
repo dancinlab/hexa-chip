@@ -60,6 +60,20 @@ verbs = ["npu_n6", "pim", "photonic", "accel", "asic", "hexa_pim", "hexa_3d", "h
 [modules.consciousness]
 verbs = ["conscious_chip", "conscious_soc"]
 
+# ── Meta-domain envelope (terafab) ─────────────────────────
+# 메타-도메인은 verb 가 아니라 6 그룹 전체를 바깥에서 감싸는 외피.
+# Terafab 은 "Tesla/xAI/SpaceX 의 수직-통합 megafab" 외부 관찰값을
+# 흡수한 envelope 으로, 28-verb / 6-group 카운트는 변경하지 않는다.
+# (절대로 새로운 verb 가 아님 — 6 그룹의 외부 wrapper 로만 등록.)
+[meta_domains.terafab]
+absorbs = ["architecture", "design", "process", "packaging", "accelerator", "consciousness"]
+type = "vertically-integrated-megafab"
+source = "external-research absorption (2026-05-11)"
+entry = "terafab/terafab.md"
+falsifier_count = 7      # F-TERAFAB-1..7
+nda_content = false
+note = "Outer envelope wrapping the 6 hexa-chip groups; NOT a verb. Does not change the 28-verb / 6-group counts."
+
 # ── Dependencies ───────────────────────────────────────────
 # All verbs are spec-first at v1.0.0 — no Python or external deps required.
 [dependencies]

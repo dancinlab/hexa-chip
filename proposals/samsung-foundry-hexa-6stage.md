@@ -163,7 +163,135 @@ Concrete experimental conditions under which **this proposal would be proven wro
 
 ---
 
-## §8. Contact
+## §8. Terafab counter-strategy
+
+> Added 2026-05-11 after the canon project absorbed Musk's Terafab
+> announcement as a meta-domain (see `terafab/terafab.md`). This section
+> reframes the present proposal as Samsung Foundry's **asymmetric
+> response** to a vertically-integrated competitor.
+
+### §8.1 Threat framing
+
+On 2026-03-21 Elon Musk announced Terafab; on 2026-04-07 Intel joined as
+14A process partner; on 2026-05-06 SpaceX filed **US$55 B initial /
+US$119 B total prototype** with Texas authorities. The pitch fuses
+hexa-chip's 6 groups (architecture · design · process · packaging ·
+accelerator · consciousness) under **one roof, one owner, one wafer
+flow**. For SF2 prospective customers and SAFE partners the strategic
+question becomes: *can a non-captive foundry still deliver a
+vertical-integration-equivalent power/perf curve without the customer
+locking themselves to a single supplier?* HEXA-6 IP answers yes.
+
+### §8.2 Why HEXA-6 IP is Samsung's natural counter
+
+Terafab buys vertical integration with **$119 B of capex and 5+ years
+of execution risk** (zero prior fab-build experience — see
+terafab.md §10 RISKS, F-TERAFAB-1, F-TERAFAB-6). HEXA-6 buys the same
+power/perf delta with **IP licensing on top of SF3P/SF2 silicon Samsung
+already ships**.
+
+```
+Asymmetric response — capex required to close the perf gap
+─────────────────────────────────────────────────────────────
+Terafab one-roof megafab     ████████████████████████  $119 B  (filing)
+Samsung SF2 + HEXA-6 IP      █░░░░░░░░░░░░░░░░░░░░░░░  ~ $1 B  (IP qual + SAFE)
+                             ────────────────────────
+                             ≈ 100x leverage on captive-fab capex
+```
+
+Mechanism: the σ·J₂=288 IP set (Egyptian 1/2+1/3+1/6 PDN +
+τ=4 DVFS boundarization + σ-sopfr yield model) delivers the same
+1.8x–2.4x TOPS/W lift on SF3P/SF2 wafers that Terafab claims to
+extract from Intel 14A under captive control. **The slogan answer to
+"one roof" is not "build our own roof" — it is "ship the IP that makes
+SAFE customers behave as if they had one."**
+
+### §8.3 Three concrete counter-actions for Samsung
+
+#### (a) SAFE expansion — vertically-integrated reference design kit tier
+
+Add a new SAFE tier above the current IP-block / DSP-IP / library
+tiers: a **Vertically-Integrated Reference Design Kit (VI-RDK)** that
+bundles HEXA-6 IP + chiplet templates + HBM6-P interface + X-Cube
+3D-stacking templates as a single licensable package.
+
+```
+Current SAFE tiers          Proposed VI-RDK tier
+──────────────────────      ──────────────────────────────
+IP partner                  ┌────────────────────────────┐
+DSP partner                 │  VI-RDK (HEXA-6 inside)    │
+Cloud partner               │  ──────────────────────    │
+Design service              │  • Egyptian PDN template   │
+EDA partner                 │  • τ=4 DVFS RTL kit        │
+                            │  • X-Cube 3D-stack recipe  │
+                            │  • HBM6-P I/O macro        │
+                            │  • σ-sopfr yield monitor   │
+                            │  ──────────────────────    │
+                            │  one-stop "vertical" feel  │
+                            │  WITHOUT customer lock-in  │
+                            └────────────────────────────┘
+```
+
+Customer pitch: "Terafab's one-roof slogan, on Samsung silicon, with
+multi-customer pricing and no Starship dependency."
+
+#### (b) HBM6-P joint research — priority bump
+
+Terafab claims **in-fab DRAM/HBM** (terafab.md §5 wafer flow, §7
+F-TERAFAB-2). The claim is currently **unverified** — no public
+disclosure of the in-fab memory line capex, throughput, or supplier
+displacement plan exists. Samsung Memory's HBM4 → HBM6-P actual
+roadmap can ship sooner.
+
+Recommendation: bump §5 Scenario B (HBM joint research) from "Samsung
+Memory tie-in required" to **funded program** with an explicit
+2027-Q4 first-silicon target. If Samsung HBM6-P samples ship before
+Terafab's first in-fab HBM wafer, **F-TERAFAB-2 fires** and
+SF2 + HBM6-P becomes the de-facto vertical answer.
+
+#### (c) Falsifier-tracking dashboard — F-TERAFAB-1..7
+
+Samsung Foundry internally instruments a dashboard that tracks the 7
+falsifiers from terafab.md §7:
+
+```
+F-TERAFAB-N    claim                          binding window    SF2 win condition
+─────────────────────────────────────────────────────────────────────────────────
+F-TERAFAB-1    capex stays at $119 B          2028              overrun > 2x
+F-TERAFAB-2    in-fab DRAM/HBM (one roof)     Mk.III (2027~29)  externally sourced
+F-TERAFAB-3    full-scale capex $5–13 T       Mk.IV (2029~32)   ceiling > $13 T
+F-TERAFAB-4    Starship $/kg ≤ 200            2032              floor unmet
+F-TERAFAB-5    1 TW AI compute / yr           2035              < 100 GW audited
+F-TERAFAB-6    Intel 14A volume by 2030       2030              delayed past 2031
+F-TERAFAB-7    n=6 lattice fit beats chance   immediate         p ≥ 0.5 (weak now)
+```
+
+When **F-TERAFAB-2 (in-fab memory)** or **F-TERAFAB-6 (Intel 14A
+volume)** slip, Samsung's foundry pitch wins back exactly the customers
+Terafab targets — automotive AI, humanoid inference, orbital training.
+The dashboard turns Terafab's announce into a **Samsung sales calendar**
+rather than a threat.
+
+### §8.4 Honest caveat
+
+This counter-strategy is the **canon project's external read**. No NDA
+content, no Samsung internal data, no Intel-roadmap proprietary input
+is invoked. All Terafab figures and timelines are sourced from the
+public list at `terafab/terafab.md §15` (Wikipedia, CNBC, Tom's
+Hardware, The Register, DCD, TechCrunch, Electrek, Yahoo Finance,
+Trefis, eeNews Europe). Samsung Foundry's actual SF2 / SAFE / X-Cube /
+HBM6 internal roadmaps may already address several of these vectors;
+this section offers the n=6 framing, not the execution detail.
+
+**Falsifier on this section itself**: if by 2027-Q4 Terafab's prototype
+ships AI5 silicon **and** in-fab HBM **and** clears F-TERAFAB-2 +
+F-TERAFAB-6 simultaneously, the asymmetric-response thesis weakens and
+Samsung must reconsider a captive-fab posture. Until then, IP licensing
+beats $119 B fab-build.
+
+---
+
+## §9. Contact
 
 - Minwoo Park (mk911tb@proton.me)
 - GitHub: dancinlab/canon
