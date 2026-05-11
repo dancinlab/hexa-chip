@@ -1,0 +1,61 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# mk2-verify.yml — PR-time falsifier + cross-doc + meta verification (Wave H)
+#
+# Sister of mk2-poll.yml. Runs on every PR touching the falsifier surface
+# (terafab/, exynos/, hexa.toml, CATALOG.md) and gates merge on:
+#   - terafab/verify_terafab.py    (6/6 HARD + 9 DEFERRED)
+#   - terafab/cross_doc_audit.py   (ALL FACTS AGREE)
+#   - exynos/verify_exynos.py      (7/7 HARD + 6 DEFERRED)
+#   - verify_catalog.py            (C1+C2+C3 PASS)
+#   - tests/test_terafab_meta.py   (8/8 OK)
+#
+# Failure modes:
+#   - any verify script returning non-zero fails the workflow; the PR
+#     cannot be merged until the underlying issue is fixed.
+#   - YAML drift in this file is caught by a hand-written stdlib check
+#     (the workflow itself doesn't depend on PyYAML being installed).
+# ─────────────────────────────────────────────────────────────────────────────
+name: mk2-verify
+
+on:
+  pull_request:
+    paths:
+      - "terafab/**"
+      - "exynos/**"
+      - "hexa.toml"
+      - "CATALOG.md"
+      - ".github/workflows/mk2-verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python (stdlib only — no pip install)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: terafab/verify_terafab.py
+        run: python3 terafab/verify_terafab.py
+
+      - name: terafab/cross_doc_audit.py
+        run: python3 terafab/cross_doc_audit.py
+
+      - name: exynos/verify_exynos.py
+        run: python3 exynos/verify_exynos.py
+
+      - name: verify_catalog.py
+        run: python3 verify_catalog.py
+
+      - name: tests/test_terafab_meta.py
+        run: python3 -m unittest tests.test_terafab_meta
+
+      - name: make mk2-check (aggregate)
+        run: make mk2-check

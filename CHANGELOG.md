@@ -5,6 +5,86 @@ All notable changes to **hexa-chip** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-12 — Wave H: Mk.II auto-trigger CI + exynos parallel polling)
+
+GitHub Actions workflows that re-evaluate the Mk.II falsifier pollers on
+a quarterly cron and open a Pull Request whenever any falsifier verdict
+changes. Extends the Wave G `terafab/poll_mk2.py` pattern to exynos
+(`F-EXYNOS-1..7`). **Zero new external claims** — every trigger
+threshold mirrors the locked text in `exynos/exynos.md` §7; every URL
+mirrors `exynos/sources.md` `SRC-EXYNOS-001..014`. The 29-verb /
+6-group surface, the v1.0.0 closure verdict, and the
+`[meta_domain_closure].falsifiers_total = 17` aggregate are all
+unchanged. Until 2026-Q3 real data arrives, every poll cycle is a
+NO-OP by design.
+
+- `.github/workflows/mk2-poll.yml` (~110 lines) — quarterly cron
+  (`0 9 1 1,4,7,10 *`) + `workflow_dispatch`. Runs the two pollers,
+  detects new observations via `git diff --quiet`, pushes a feature
+  branch `mk2-poll/YYYY-Qn`, and opens a PR labelled `auto-poll`,
+  `falsifier-mk2`. Stdlib-only — no `pip install` lines.
+- `.github/workflows/mk2-verify.yml` (~55 lines) — PR-time gate on
+  `terafab/**`, `exynos/**`, `hexa.toml`, `CATALOG.md`. Runs the 5
+  verify scripts (`verify_terafab.py` + `cross_doc_audit.py` +
+  `verify_exynos.py` + `verify_catalog.py` + `tests/test_terafab_meta.py`)
+  plus `make mk2-check`. Fails the PR check if any returns non-zero.
+- `Makefile` — added `mk2-check` target that runs the 5 verify scripts
+  in sequence; `make ci` now calls `make mk2-check` as well.
+- `exynos/poll_exynos_mk2.py` (~430 lines) — Mk.II monitor mirroring
+  `terafab/poll_mk2.py`. `ExynosFalsifierMonitor` class with
+  `check_e1..7()` methods, default no-network table summary,
+  `--check` JSON emitter (schema `exynos.mk2.verdict.v1`),
+  `--dry-run` URL+regex lister, `--poll` live mode, and `--smoke`
+  mode gated by `HEXA_EXYNOS_MK2_SMOKE=1` for CI infra testing.
+  Append-only writer never deletes history. Logs to
+  `exynos/mk2-poll.log` (gitignored).
+- `exynos/mk2-observations.md` (~165 lines) — append-only log with one
+  SCAFFOLD baseline row per falsifier (F-EXYNOS-1..7), all marked
+  `pending — SCAFFOLD — DEFERRED`. Includes `## Polling schedule`
+  derived from `exynos.md` §11 (Mk.II~VI rollout cadence) and a
+  `## Source registry` listing the 14 `SRC-EXYNOS` URLs tagged with
+  their `F1..F7` informees. Extraction regexes registered for 6 of 7
+  falsifiers; F-EXYNOS-7 (χ² aggregate) stays DEFERRED-locked.
+- `exynos/MK2.md` (~155 lines) — operator's manual covering when to
+  run, how to interpret each mode, per-falsifier PASS/FAIL/goalpost-
+  move semantics, failure-mode recovery (Samsung IR restructure,
+  TrendForce paywall, foundry spin-off NDA disclosure).
+- `exynos/verify_exynos.py` — added `read_mk2_observations()` and
+  `_mk2_or_deferred()` indirection (mirroring Wave G terafab pattern).
+  F-EXYNOS-1..6 now read their verdict from
+  `exynos/mk2-observations.md` when one is present; HARD checks
+  (MASTER-IDENTITY, GROUP-COUNT, EGYPTIAN-SPLIT, CAPEX-DIDACTIC,
+  GALAXY-CADENCE, NODE-CADENCE, F-EXYNOS-7 χ²) are NEVER overridden.
+  Mk.I behaviour byte-identical: 7/7 HARD PASS, 6 DEFERRED.
+- `terafab/poll_mk2.py` — added `--smoke` mode (`HEXA_MK2_SMOKE=1`-gated)
+  for parity with exynos; existing modes unchanged.
+- `terafab/cross_doc_audit.py` — added §E6 exynos Mk.II observations
+  register check mirroring §11.5 terafab logic: falsifier set must
+  be exactly `{F-EXYNOS-1..7}`; every URL in `## Source registry`
+  must also live in `exynos/sources.md`.
+- `verify_catalog.py` — added `.github/` to T3_DIRS (workflow
+  infrastructure); CATALOG.md T3 table and quick-facts card updated.
+- `CATALOG.md` — T2 envelope table refreshed to call out the Mk.II
+  auto-trigger CI; new bullet 8 under "Recommended next moves";
+  `.github/` listed under T3; top-level dir count 60 → 61.
+- `.gitignore` — added `exynos/mk2-poll.log`.
+
+**Honesty notes / failure modes**:
+- `gh pr create` will fail if the bot lacks `pull-requests: write` on
+  the default `GITHUB_TOKEN`; in that case the polled rows remain on
+  the `mk2-poll/YYYY-Qn` feature branch for a manual PR.
+- GitHub disables `schedule:` cron on forks with no recent push
+  activity (60 d threshold); mitigation is manual `workflow_dispatch`
+  once per quarter when cron is suspected stale.
+- If a polled URL changes structure, the regex stops matching and
+  `poll_*_mk2.py` logs `no match` rather than crashing. The next
+  quarter either the URL recovers or `sources.md` needs a manual edit.
+- Smoke mode (`HEXA_*_MK2_SMOKE=1 --smoke`) writes a clearly-labelled
+  synthetic row (`SMOKE — DO NOT TREAT AS REAL`); operators must
+  revert it before merging to main.
+- F-EXYNOS-7 stays DEFERRED-locked at Mk.II (χ² evaluated inside
+  `verify_exynos.py`, not via the poller).
+
 ### Added (2026-05-12 — Wave G: Mk.II falsifier monitoring infrastructure)
 
 Data-arrival pipeline that feeds `F-TERAFAB-1..10` from public sources

@@ -22,3 +22,6 @@ __pycache__/
 
 # Mk.II poll cycle log (terafab/poll_mk2.py append target — Wave G)
 terafab/mk2-poll.log
+
+# Mk.II poll cycle log (exynos/poll_exynos_mk2.py append target — Wave H)
+exynos/mk2-poll.log

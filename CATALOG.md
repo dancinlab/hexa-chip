@@ -109,9 +109,11 @@ Outer wrappers absorbing external observations onto the 6-group surface. Do **no
 | Dir | Type | Closure | Falsifiers | Lines |
 |-----|------|---------|-----------:|------:|
 | `terafab/` | Musk vertically-integrated megafab | `SPEC_PLUS_RUNNABLE` | F-TERAFAB-1..10 | ~5,800 |
-| `exynos/` | Samsung Korean-fab heritage envelope | `SPEC_PLUS_RUNNABLE` | F-EXYNOS-1..7 | ~1,200 |
+| `exynos/` | Samsung Korean-fab heritage envelope | `SPEC_PLUS_RUNNABLE` | F-EXYNOS-1..7 | ~1,400 |
 
 **Registration**: `hexa.toml [meta_domains.terafab]` (Wave 6) and `[meta_domains.exynos]` (Wave 7) register both envelopes explicitly. Both share the 15-section grammar; `exynos/exynos.md` was upgraded from a single-file placeholder to a full envelope at Wave 7 (mirroring the Terafab pattern: spec doc + verify_*.py + sources.md + CLOSURE.md + README.md + cross-doc audit integration).
+
+**Mk.II auto-trigger CI** (Wave H, 2026-05-12): both envelopes now have an auto-trigger CI layer in `.github/workflows/`. Terafab `poll_mk2.py` (Wave G) and exynos `poll_exynos_mk2.py` (Wave H) run quarterly under `mk2-poll.yml` (cron 09:00 UTC on the 1st of Jan/Apr/Jul/Oct); when new observations land the workflow opens a PR labelled `auto-poll`, `falsifier-mk2`. The PR-time `mk2-verify.yml` gates merges by running all 5 verify scripts (terafab/verify_terafab.py + cross_doc_audit.py + exynos/verify_exynos.py + verify_catalog.py + tests/test_terafab_meta.py) plus `make mk2-check`. Until 2026-Q3 real data arrives, every poll cycle is a NO-OP by design.
 
 **Stake**: T2 envelopes absorb external pressure (industry events, fab announcements) without polluting the canonical T1 surface. Each owns a runnable falsifier register (Terafab: F-TERAFAB-1..10 / Exynos: F-EXYNOS-1..7). The two envelopes are complementary — Terafab encodes the greenfield-vertical-megafab topology (Musk/Intel announce 2026); Exynos encodes the brownfield-IDM-heritage topology (Samsung 40-year IDM, public sources only, no NDA).
 
@@ -134,6 +136,7 @@ Cross-cutting tooling — not verbs, not envelopes, but the *machinery* that run
 | `tests/` | unittest invariants (`test_terafab_meta.py` + 4 in-tree tests) | 7 | cross-doc agreement gate |
 | `firmware/` | Board / HDL / MCU / SIM cross-cutting firmware | 30 | hardware bring-up surface |
 | `state/` | CLI audit log + 2878 marker files (gitignored) | ~2880 | build artifact |
+| `.github/` | GitHub Actions workflows (`mk2-poll.yml` + `mk2-verify.yml`) — Wave H | 2 | Mk.II auto-trigger CI |
 
 **`state/` is `.gitignored`** — its 2878 files are not version-controlled. Safe to clean locally (`rm -rf state/markers/*`) without affecting repo state. The `state/hexa_chip_cli.log` is the running audit log.
 
@@ -321,6 +324,7 @@ In rough priority / cost order:
 5. **(cost: medium)** Promote T5 candidates to T1: 9-step release checklist + v1.1.0 bump. Only when at least one of `ai_native_arch` / `gpgpu_n6` / `hexa_ai_native_n6` has been used by an external consumer.
 6. **(cost: low)** Add `cross_doc_audit.py` extension that asserts CATALOG.md ↔ hexa.toml ↔ filesystem agreement. Currently `terafab/cross_doc_audit.py` checks Terafab-only.
 7. **(cost: zero)** Periodic re-classify: when a new top-level dir is added, this catalog must be updated in the same commit.
+8. **(cost: zero, landed Wave H)** Mk.II auto-trigger CI: `.github/workflows/mk2-poll.yml` runs `terafab/poll_mk2.py --poll` + `exynos/poll_exynos_mk2.py --poll` quarterly and opens a PR if any falsifier verdict changes. `.github/workflows/mk2-verify.yml` gates PR merges on the 5 verify scripts + `make mk2-check`. Stdlib-only (no `pip install` lines). NO-OP until 2026-Q3 real data lands.
 
 ---
 
@@ -328,13 +332,13 @@ In rough priority / cost order:
 
 | Fact | Value |
 |------|-------|
-| Top-level directories | 60 (audited) |
+| Top-level directories | 61 (audited; `.github/` added Wave H) |
 | Root meta files | 13 (incl. this CATALOG.md) |
 | Tiers | 7 (T0..T6) |
 | Canonical verbs | 29 (T1) |
 | Canonical groups | 6 (T1) |
 | Meta-domains | 2 (T2: terafab + exynos) |
-| Runtime dirs | 5 (T3) |
+| Runtime dirs | 6 (T3; `.github/` joined Wave H) |
 | Knowledge dirs | 5 (T4) |
 | Deferred candidates | 3 (T5) |
 | Legacy-frozen leaves | 16 (T6 = 5 hexa-X + 11 chip-topic) |

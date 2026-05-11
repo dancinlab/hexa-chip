@@ -1,0 +1,100 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# mk2-poll.yml — Mk.II auto-trigger CI (Wave H)
+#
+# Re-evaluates the falsifier-monitor pollers on a quarterly schedule and
+# opens a Pull Request if any new observations land. Until 2026-Q3 the
+# pollers return zero new rows, so this workflow is a NO-OP by design.
+#
+# Inputs (stdlib only — NO pip install lines):
+#   - terafab/poll_mk2.py  (Wave G, F-TERAFAB-1..10)
+#   - exynos/poll_exynos_mk2.py  (Wave H, F-EXYNOS-1..7)
+#
+# Failure modes (documented for the operator):
+#   - cron may not fire on a public-fork branch with no recent push activity:
+#     GitHub disables schedules on inactive forks after 60 d. Mitigation:
+#     run via `workflow_dispatch` once per quarter if cron is suspected stale.
+#   - `gh pr create` will fail if the bot lacks `pull-requests: write` on
+#     the default GITHUB_TOKEN; the workflow surfaces the gh error and
+#     leaves the polled rows committed to a feature branch for manual PR.
+#   - if a polled URL changes structure, the regex stops matching and
+#     poll_mk2.py logs `no match` rather than crashing; the next quarter
+#     either the URL recovers or sources.md needs a manual update.
+# ─────────────────────────────────────────────────────────────────────────────
+name: mk2-poll
+
+on:
+  schedule:
+    # First day of each calendar quarter at 09:00 UTC.
+    # Order: Jan 1, Apr 1, Jul 1, Oct 1.
+    - cron: "0 9 1 1,4,7,10 *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python (stdlib only — no pip install)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run terafab Mk.II poller
+        run: |
+          python3 terafab/poll_mk2.py --poll
+
+      - name: Run exynos Mk.II poller (if present)
+        run: |
+          if [ -f exynos/poll_exynos_mk2.py ]; then
+            python3 exynos/poll_exynos_mk2.py --poll
+          else
+            echo "exynos/poll_exynos_mk2.py not yet present — skipping"
+          fi
+
+      - name: Detect new observations
+        id: changes
+        run: |
+          if git diff --quiet -- terafab/mk2-observations.md exynos/mk2-observations.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No new observations — NO-OP cycle."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "New observations detected."
+          fi
+
+      - name: Compute current calendar quarter tag
+        if: steps.changes.outputs.changed == 'true'
+        id: quarter
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          from datetime import datetime, timezone
+          now = datetime.now(timezone.utc)
+          q = (now.month - 1) // 3 + 1
+          print(f"tag={now.year}-Q{q}")
+          EOF
+
+      - name: Create observation-update Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="mk2-poll/${{ steps.quarter.outputs.tag }}"
+          git config user.name  "hexa-chip mk2 poller"
+          git config user.email "noreply@github.com"
+          git checkout -b "$BRANCH"
+          git add terafab/mk2-observations.md exynos/mk2-observations.md
+          git commit -m "chore(mk2-poll): observation update ${{ steps.quarter.outputs.tag }}"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "Mk.II observation update ${{ steps.quarter.outputs.tag }}" \
+            --body "Automated quarterly Mk.II poll cycle. Human review required: classify each PENDING_REVIEW row as PASS / WEAK_FAIL / HARD_FAIL per the locked scaffold thresholds (terafab/falsifier-mk2-scaffold.md §2/§3, exynos/exynos.md §7)." \
+            --label "auto-poll" \
+            --label "falsifier-mk2"

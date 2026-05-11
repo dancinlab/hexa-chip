@@ -28,7 +28,7 @@ TESTS     := tests/run_tests.hexa
 SELFTEST  := cli/hexa-chip.hexa
 
 .PHONY: all ci verify verify-quiet verify-json verbs verbs-json tests tests-json \
-        selftest list clean help install
+        selftest list clean help install mk2-check
 
 help:
 	@echo "hexa-chip — top-level targets"
@@ -42,6 +42,7 @@ help:
 	@echo "  make ci           — alias for all (CI entry point)"
 	@echo "  make list         — list registered verify checks + tests"
 	@echo "  make install      — hx install into /Users/ghost/.hx/bin/hexa-chip"
+	@echo "  make mk2-check    — run 5 Mk.II/meta-domain verify scripts (Wave H CI)"
 
 verify:
 	@HEXA_CHIP_ROOT=$(ROOT) $(HEXA) run $(CLI)
@@ -69,7 +70,26 @@ selftest:
 
 all: verify verbs tests selftest
 
-ci: all
+ci: all mk2-check
+
+# Wave H — Mk.II auto-trigger CI aggregator. Runs the five non-hexa verify
+# scripts (Python stdlib only) used by .github/workflows/mk2-verify.yml.
+# Exit code = union of the five script return codes (first non-zero wins;
+# Make's default -e behaviour). Intentionally separate from `make verify`
+# (which runs hexa-side checks) so the GitHub Actions runner doesn't need
+# the hexa interpreter installed.
+mk2-check:
+	@echo "── mk2-check: terafab/verify_terafab.py"
+	@python3 terafab/verify_terafab.py
+	@echo "── mk2-check: terafab/cross_doc_audit.py"
+	@python3 terafab/cross_doc_audit.py
+	@echo "── mk2-check: exynos/verify_exynos.py"
+	@python3 exynos/verify_exynos.py
+	@echo "── mk2-check: verify_catalog.py"
+	@python3 verify_catalog.py
+	@echo "── mk2-check: tests/test_terafab_meta.py"
+	@python3 -m unittest tests.test_terafab_meta
+	@echo "── mk2-check: PASS"
 
 list:
 	@HEXA_CHIP_ROOT=$(ROOT) $(HEXA) run $(CLI) --list

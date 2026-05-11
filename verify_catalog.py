@@ -35,7 +35,7 @@ T1_GROUPS: dict[str, list[str]] = {
 # Tier 2 envelopes.
 T2_DIRS = {"terafab", "exynos"}
 # Tier 3 runtime.
-T3_DIRS = {"cli", "verify", "tests", "firmware", "state"}
+T3_DIRS = {"cli", "verify", "tests", "firmware", "state", ".github"}
 # Tier 4 knowledge.
 T4_DIRS = {"papers", "origins", "chip-verify", "proposals", "discovery"}
 # Tier 5 deferred.
@@ -57,6 +57,8 @@ def t1_dirs() -> set[str]:
 
 
 def discover_top_level_dirs() -> set[str]:
+    # `.git` / `.claude` / `__pycache__` are infra-only and never classified;
+    # `.github/` IS classified (Wave H — workflow infrastructure under T3).
     skip = {".git", ".claude", "__pycache__"}
     dirs: set[str] = set()
     for entry in ROOT.iterdir():

@@ -1,33 +1,37 @@
 #!/usr/bin/env python3
 # ─────────────────────────────────────────────────────────────────────────────
-# terafab/poll_mk2.py — Mk.II falsifier monitor (stdlib only)
+# exynos/poll_exynos_mk2.py — Mk.II falsifier monitor (stdlib only)
 #
-# Reads `terafab/mk2-observations.md` (Source registry + Extraction regex
-# registry) and emits, per falsifier, a verdict suitable for piping into
-# `verify_terafab.py`. Default mode performs zero network calls — only
-# `--poll` actually hits URLs (and even then, scaffold rule §1 is enforced:
-# no scaffold-given regex ⇒ verdict stays DEFERRED).
+# Sister of `terafab/poll_mk2.py` (Wave G). Same grammar, different anchor:
+# Samsung Foundry / Exynos / Korean-fab heritage instead of Musk vertical
+# megafab. Reads `exynos/mk2-observations.md` (Source registry + Extraction
+# regex registry) and emits, per falsifier, a verdict suitable for piping
+# into `verify_exynos.py`. Default mode performs zero network calls — only
+# `--poll` actually hits URLs (and even then, rule §1 is enforced: no
+# regex ⇒ verdict stays DEFERRED).
 #
-# Design constraints (from build prompt):
+# Design constraints (Wave H build prompt):
 #   - stdlib only (no pip); Python 3.11+ for tomllib/dataclasses-defaults
 #   - importable without network (network calls live only under `--poll`)
 #   - extraction regexes are loaded from mk2-observations.md, never invented
-#     in code; the file in turn copies them from falsifier-mk2-scaffold.md §2/§3
-#   - thresholds locked in scaffold §2/§3; this script reads them, never edits
+#     in code; the file in turn copies them from exynos.md §7 trigger text
+#   - thresholds locked in exynos.md §7; this script reads them, never edits
 #   - append-only writes to mk2-observations.md (never delete history)
 #
 # CLI:
-#   python3 terafab/poll_mk2.py              # default: print observation table
-#   python3 terafab/poll_mk2.py --check      # JSON verdict per falsifier
-#   python3 terafab/poll_mk2.py --dry-run    # list URLs + regexes (no fetch)
-#   python3 terafab/poll_mk2.py --poll       # ACTUALLY fetch + append rows
+#   python3 exynos/poll_exynos_mk2.py             # default: table summary
+#   python3 exynos/poll_exynos_mk2.py --check     # JSON verdict per falsifier
+#   python3 exynos/poll_exynos_mk2.py --dry-run   # list URLs + regexes
+#   python3 exynos/poll_exynos_mk2.py --poll      # ACTUALLY fetch + append
+#   HEXA_EXYNOS_MK2_SMOKE=1 python3 exynos/poll_exynos_mk2.py --smoke
+#                                                 # synthetic-row test
 #
 # Exit codes:
 #   0 = scaffold healthy (all expected falsifier rows present)
 #   1 = scaffold malformed (missing falsifiers, missing tables, etc.)
 #   2 = poll error (network failure, parse failure during --poll)
 #
-# Cost: $0 (stdlib only). Logs appended to terafab/mk2-poll.log (gitignored).
+# Cost: $0 (stdlib only). Logs appended to exynos/mk2-poll.log (gitignored).
 # ─────────────────────────────────────────────────────────────────────────────
 
 from __future__ import annotations
@@ -44,25 +48,24 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-REPO   = Path(__file__).resolve().parent.parent
-TERAFAB = REPO / "terafab"
-OBS    = TERAFAB / "mk2-observations.md"
-SCAF   = TERAFAB / "falsifier-mk2-scaffold.md"
-SRCS   = TERAFAB / "sources.md"
-LOG    = TERAFAB / "mk2-poll.log"
+REPO    = Path(__file__).resolve().parent.parent
+EXYNOS  = REPO / "exynos"
+OBS     = EXYNOS / "mk2-observations.md"
+SRCS    = EXYNOS / "sources.md"
+LOG     = EXYNOS / "mk2-poll.log"
 
-# Smoke-mode gate (Wave H — synthetic observations for CI testing).
-SMOKE_ENV_VAR = "HEXA_MK2_SMOKE"
-
-# Expected falsifier set (matches scaffold §2 + §3). Reading from a constant
+# Expected falsifier set (matches exynos.md §7). Reading from a constant
 # rather than parsing avoids the audit script discovering its own data
 # source — the audit script independently checks the file's row set against
-# this same canonical {1..10}.
-FALSIFIER_IDS = [f"F-TERAFAB-{i}" for i in range(1, 11)]
+# this same canonical {1..7}.
+FALSIFIER_IDS = [f"F-EXYNOS-{i}" for i in range(1, 8)]
 
 # Network fetch knobs. `--poll` is the only mode that uses these.
-HTTP_TIMEOUT_S = 10
-HTTP_USER_AGENT = "hexa-chip/poll_mk2 (+https://github.com/dancinlab/hexa-chip)"
+HTTP_TIMEOUT_S  = 10
+HTTP_USER_AGENT = "hexa-chip/poll_exynos_mk2 (+https://github.com/dancinlab/hexa-chip)"
+
+# Smoke-mode gate (Wave H — synthetic observations for CI testing).
+SMOKE_ENV_VAR = "HEXA_EXYNOS_MK2_SMOKE"
 
 
 # ── data classes ────────────────────────────────────────────────────────────
@@ -86,7 +89,7 @@ class SourceEntry:
 
 @dataclass
 class RegexEntry:
-    falsifier: str           # F-TERAFAB-N
+    falsifier: str           # F-EXYNOS-N
     pattern: Optional[str]   # None if scaffold gave no regex (n/a)
     extracts: str            # human description of what gets pulled out
 
@@ -100,11 +103,10 @@ def _read(path: Path) -> str:
 
 def parse_observation_rows(text: str) -> list[ObsRow]:
     """Pull all rows from the ## Observations table. Append-friendly: just
-    matches Markdown table rows starting with `| F-TERAFAB-`."""
+    matches Markdown table rows starting with `| F-EXYNOS-`."""
     rows: list[ObsRow] = []
-    # Match table rows whose first cell is F-TERAFAB-N.
     row_re = re.compile(
-        r"^\|\s*(F-TERAFAB-\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|"
+        r"^\|\s*(F-EXYNOS-\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|"
         r"\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|",
         re.MULTILINE,
     )
@@ -122,10 +124,9 @@ def parse_observation_rows(text: str) -> list[ObsRow]:
 
 
 def parse_source_registry(text: str) -> list[SourceEntry]:
-    """Pull SRC-TERAFAB-NNN | falsifiers | url tuples from the ## Source
+    """Pull SRC-EXYNOS-NNN | falsifiers | url tuples from the ## Source
     registry fenced code block."""
     entries: list[SourceEntry] = []
-    # Find the fenced block under '## Source registry'.
     block_re = re.compile(
         r"##\s+Source registry.*?```(.*?)```", re.DOTALL
     )
@@ -134,7 +135,7 @@ def parse_source_registry(text: str) -> list[SourceEntry]:
         return entries
     body = m.group(1)
     line_re = re.compile(
-        r"^(SRC-TERAFAB-\d{3})\s*\|\s*([^|]+?)\s*\|\s*(\S+)\s*$",
+        r"^(SRC-EXYNOS-\d{3})\s*\|\s*([^|]+?)\s*\|\s*(\S+)\s*$",
         re.MULTILINE,
     )
     for lm in line_re.finditer(body):
@@ -149,7 +150,7 @@ def parse_source_registry(text: str) -> list[SourceEntry]:
 
 def parse_regex_registry(text: str) -> list[RegexEntry]:
     """Pull falsifier→regex pairs from the ## Extraction regex registry
-    fenced block. Scaffold rule §1: no regex ⇒ DEFERRED."""
+    fenced block. Rule §1: no regex ⇒ DEFERRED."""
     entries: list[RegexEntry] = []
     block_re = re.compile(
         r"##\s+Extraction regex registry.*?```(.*?)```", re.DOTALL
@@ -158,10 +159,9 @@ def parse_regex_registry(text: str) -> list[RegexEntry]:
     if not m:
         return entries
     body = m.group(1)
-    # Match: F-TERAFAB-N :: <pattern or "n/a..."> :: <extracts>
-    # `::` is used instead of `|` because regex bodies contain `|`.
+    # Match: F-EXYNOS-N :: <pattern or "n/a..."> :: <extracts>
     line_re = re.compile(
-        r"^(F-TERAFAB-\d+)\s*::\s*(.+?)\s*::\s*(.+?)\s*$",
+        r"^(F-EXYNOS-\d+)\s*::\s*(.+?)\s*::\s*(.+?)\s*$",
         re.MULTILINE,
     )
     for lm in line_re.finditer(body):
@@ -169,7 +169,7 @@ def parse_regex_registry(text: str) -> list[RegexEntry]:
         # Skip the table header row
         if raw_pat.startswith("regex"):
             continue
-        # Skip markdown table separator (---:---:--- etc.)
+        # Skip markdown table separator
         if set(raw_pat) <= {"-", " "}:
             continue
         if raw_pat.lower().startswith("n/a"):
@@ -193,7 +193,6 @@ def latest_verdict_per_falsifier(rows: list[ObsRow]) -> dict[str, str]:
     out: dict[str, str] = {}
     for row in rows:
         out[row.falsifier] = row.verdict
-    # Ensure every expected falsifier has at least an entry.
     for fid in FALSIFIER_IDS:
         out.setdefault(fid, "DEFERRED")
     return out
@@ -218,7 +217,7 @@ def http_fetch(url: str, timeout: int = HTTP_TIMEOUT_S) -> Optional[str]:
 
 
 def apply_regex(pattern: str, body: str) -> Optional[str]:
-    """Apply the scaffold-given regex to a fetched body. Returns the first
+    """Apply the registered regex to a fetched body. Returns the first
     full match's `group(0)` (or the joined groups), or None if no match."""
     try:
         m = re.search(pattern, body, re.IGNORECASE)
@@ -239,7 +238,7 @@ def log_event(line: str) -> None:
         fh.write(f"{ts} {line}\n")
 
 
-# ── append-only row writer (used by --poll) ─────────────────────────────────
+# ── append-only row writer (used by --poll / --smoke) ───────────────────────
 APPEND_MARKER = "<!-- POLL-APPEND-MARKER:"
 
 
@@ -250,8 +249,6 @@ def append_observation_row(row: ObsRow) -> None:
     line = (f"| {row.falsifier} | {row.quarter} | {row.url} | "
             f"{row.observation} | {row.trigger} | {row.verdict} | "
             f"{row.date_logged} |\n")
-    # Insert right before the marker (so the marker comment stays last in
-    # the table region) — fall back to appending if marker is missing.
     if APPEND_MARKER in text:
         text = text.replace(APPEND_MARKER, line + APPEND_MARKER, 1)
     else:
@@ -261,15 +258,15 @@ def append_observation_row(row: ObsRow) -> None:
 
 # ── monitor class (per-falsifier check methods) ─────────────────────────────
 @dataclass
-class FalsifierMonitor:
-    """Holds the parsed mk2-observations.md state. Each `check_fN()` method
+class ExynosFalsifierMonitor:
+    """Holds the parsed mk2-observations.md state. Each `check_eN()` method
     returns the *current* verdict for that falsifier — the verdict from the
     latest table row (which may still be `DEFERRED` if no real data has
     landed yet).
 
-    The N=10 check methods are intentionally thin wrappers around
+    The N=7 check methods are intentionally thin wrappers around
     `latest_verdict_per_falsifier()`. They exist as a stable API surface
-    for `verify_terafab.py` to call into."""
+    for `verify_exynos.py` to call into."""
 
     rows: list[ObsRow]          = field(default_factory=list)
     sources: list[SourceEntry]  = field(default_factory=list)
@@ -277,7 +274,7 @@ class FalsifierMonitor:
     _verdicts: dict[str, str]   = field(default_factory=dict)
 
     @classmethod
-    def load(cls) -> "FalsifierMonitor":
+    def load(cls) -> "ExynosFalsifierMonitor":
         text = _read(OBS)
         mon = cls(
             rows=parse_observation_rows(text),
@@ -291,16 +288,13 @@ class FalsifierMonitor:
     def _check(self, fid: str) -> str:
         return self._verdicts.get(fid, "DEFERRED")
 
-    def check_f1(self) -> str:  return self._check("F-TERAFAB-1")
-    def check_f2(self) -> str:  return self._check("F-TERAFAB-2")
-    def check_f3(self) -> str:  return self._check("F-TERAFAB-3")
-    def check_f4(self) -> str:  return self._check("F-TERAFAB-4")
-    def check_f5(self) -> str:  return self._check("F-TERAFAB-5")
-    def check_f6(self) -> str:  return self._check("F-TERAFAB-6")
-    def check_f7(self) -> str:  return self._check("F-TERAFAB-7")
-    def check_f8(self) -> str:  return self._check("F-TERAFAB-8")
-    def check_f9(self) -> str:  return self._check("F-TERAFAB-9")
-    def check_f10(self) -> str: return self._check("F-TERAFAB-10")
+    def check_e1(self) -> str: return self._check("F-EXYNOS-1")
+    def check_e2(self) -> str: return self._check("F-EXYNOS-2")
+    def check_e3(self) -> str: return self._check("F-EXYNOS-3")
+    def check_e4(self) -> str: return self._check("F-EXYNOS-4")
+    def check_e5(self) -> str: return self._check("F-EXYNOS-5")
+    def check_e6(self) -> str: return self._check("F-EXYNOS-6")
+    def check_e7(self) -> str: return self._check("F-EXYNOS-7")
 
     def all_verdicts(self) -> dict[str, str]:
         return {fid: self._check(fid) for fid in FALSIFIER_IDS}
@@ -308,7 +302,7 @@ class FalsifierMonitor:
     # ── per-falsifier source/regex lookup ────────────────────────────────
     def sources_for(self, fid: str) -> list[SourceEntry]:
         """Return all sources whose `falsifiers` list contains the short
-        form of fid (e.g., 'F1' for F-TERAFAB-1)."""
+        form of fid (e.g., 'F1' for F-EXYNOS-1)."""
         tag = "F" + fid.split("-")[-1]
         return [s for s in self.sources if tag in s.falsifiers]
 
@@ -320,9 +314,9 @@ class FalsifierMonitor:
 
 
 # ── commands ────────────────────────────────────────────────────────────────
-def cmd_default(mon: FalsifierMonitor) -> int:
+def cmd_default(mon: ExynosFalsifierMonitor) -> int:
     print("=" * 72)
-    print(" terafab/poll_mk2.py — Mk.II observation state (no network)")
+    print(" exynos/poll_exynos_mk2.py — Mk.II observation state (no network)")
     print(f" sources known: {len(mon.sources)}   regexes: {len(mon.regexes)}")
     print(f" rows in mk2-observations.md: {len(mon.rows)}")
     print("=" * 72)
@@ -343,10 +337,10 @@ def cmd_default(mon: FalsifierMonitor) -> int:
     return 0 if len(mon.rows) >= len(FALSIFIER_IDS) else 1
 
 
-def cmd_check(mon: FalsifierMonitor) -> int:
-    """Emit JSON {falsifier_id: verdict, ...} for piping to verify_terafab.py."""
+def cmd_check(mon: ExynosFalsifierMonitor) -> int:
+    """Emit JSON {falsifier_id: verdict, ...} for piping to verify_exynos.py."""
     out = {
-        "schema":    "terafab.mk2.verdict.v1",
+        "schema":    "exynos.mk2.verdict.v1",
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "verdicts":  mon.all_verdicts(),
         "row_count": len(mon.rows),
@@ -355,18 +349,16 @@ def cmd_check(mon: FalsifierMonitor) -> int:
     return 0
 
 
-def cmd_dry_run(mon: FalsifierMonitor) -> int:
+def cmd_dry_run(mon: ExynosFalsifierMonitor) -> int:
     print("=" * 72)
     print(" --dry-run: URLs + regexes that WOULD be fetched (no network)")
     print("=" * 72)
-    any_actionable = False
     for fid in FALSIFIER_IDS:
         srcs = mon.sources_for(fid)
         rx   = mon.regex_for(fid)
         rx_pat = rx.pattern if (rx and rx.pattern) else None
         rx_show = rx_pat if rx_pat else "(no regex — scaffold left DEFERRED)"
         actionable = bool(srcs) and bool(rx_pat)
-        any_actionable = any_actionable or actionable
         tag = "[FETCH]" if actionable else "[SKIP] "
         print(f"\n {tag} {fid}")
         print(f"   regex: {rx_show}")
@@ -377,13 +369,17 @@ def cmd_dry_run(mon: FalsifierMonitor) -> int:
                 print(f"   url  : {s.src_id}  {s.url}")
     print()
     print("=" * 72)
-    print(f" actionable falsifiers: {sum(1 for fid in FALSIFIER_IDS if mon.regex_for(fid) and mon.regex_for(fid).pattern and mon.sources_for(fid))} / {len(FALSIFIER_IDS)}")
+    actionable_count = sum(
+        1 for fid in FALSIFIER_IDS
+        if mon.regex_for(fid) and mon.regex_for(fid).pattern and mon.sources_for(fid)
+    )
+    print(f" actionable falsifiers: {actionable_count} / {len(FALSIFIER_IDS)}")
     print(" (--poll would actually fetch + append rows for the [FETCH] set)")
     print("=" * 72)
     return 0
 
 
-def cmd_poll(mon: FalsifierMonitor) -> int:
+def cmd_poll(mon: ExynosFalsifierMonitor) -> int:
     """Live mode — fetch every actionable source, extract values, append
     rows. Never overwrites history."""
     log_event("poll cycle start")
@@ -405,8 +401,7 @@ def cmd_poll(mon: FalsifierMonitor) -> int:
             if extracted is None:
                 log_event(f"    no match")
                 continue
-            # Locked-trigger lookup: copy verbatim from the SCAFFOLD row.
-            trigger = _scaffold_trigger_for(mon, fid)
+            trigger = _spec_trigger_for(mon, fid)
             row = ObsRow(
                 falsifier=fid,
                 quarter=quarter,
@@ -424,9 +419,9 @@ def cmd_poll(mon: FalsifierMonitor) -> int:
     return 0
 
 
-def cmd_smoke(mon: FalsifierMonitor) -> int:
-    """Smoke-test mode (CI infra check). Gated behind HEXA_MK2_SMOKE=1
-    env var. Appends ONE synthetic row for F-TERAFAB-1 with verdict
+def cmd_smoke(mon: ExynosFalsifierMonitor) -> int:
+    """Smoke-test mode (CI infra check). Gated behind HEXA_EXYNOS_MK2_SMOKE=1
+    env var. Appends ONE synthetic row for F-EXYNOS-1 with verdict
     PENDING_REVIEW so the auto-trigger workflow's git diff detector can be
     exercised end-to-end without waiting for 2026-Q3 real data. The row
     is clearly labelled `SMOKE — DO NOT TREAT AS REAL` so an operator
@@ -439,16 +434,16 @@ def cmd_smoke(mon: FalsifierMonitor) -> int:
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     quarter = _current_quarter()
     row = ObsRow(
-        falsifier="F-TERAFAB-1",
+        falsifier="F-EXYNOS-1",
         quarter=f"{quarter}-SMOKE",
         url="https://example.invalid/smoke",
         observation="SMOKE — DO NOT TREAT AS REAL (synthetic; CI infra test)",
-        trigger=_scaffold_trigger_for(mon, "F-TERAFAB-1"),
+        trigger=_spec_trigger_for(mon, "F-EXYNOS-1"),
         verdict="PENDING_REVIEW",
         date_logged=today,
     )
     append_observation_row(row)
-    log_event(f"smoke: appended synthetic row for F-TERAFAB-1 at {today}")
+    log_event(f"smoke: appended synthetic row for F-EXYNOS-1 at {today}")
     print(f"smoke: appended 1 synthetic row to {OBS.name} "
           f"(verdict=PENDING_REVIEW; revert before merging to main).")
     return 0
@@ -461,7 +456,7 @@ def _current_quarter() -> str:
     return f"{now.year}-Q{q}"
 
 
-def _scaffold_trigger_for(mon: FalsifierMonitor, fid: str) -> str:
+def _spec_trigger_for(mon: ExynosFalsifierMonitor, fid: str) -> str:
     """Return the locked Mk.I SCAFFOLD trigger text for this falsifier, so
     polled rows mirror the same threshold without restating it."""
     for r in mon.rows:
@@ -473,8 +468,8 @@ def _scaffold_trigger_for(mon: FalsifierMonitor, fid: str) -> str:
 # ── entry point ─────────────────────────────────────────────────────────────
 def build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="poll_mk2.py",
-        description="Mk.II falsifier monitor (terafab). Stdlib only; "
+        prog="poll_exynos_mk2.py",
+        description="Mk.II falsifier monitor (exynos). Stdlib only; "
                     "no network unless --poll is passed.",
     )
     g = p.add_mutually_exclusive_group()
@@ -491,7 +486,7 @@ def build_argparser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[list[str]] = None) -> int:
     args = build_argparser().parse_args(argv)
-    mon = FalsifierMonitor.load()
+    mon = ExynosFalsifierMonitor.load()
     if args.check:
         return cmd_check(mon)
     if args.dry_run:

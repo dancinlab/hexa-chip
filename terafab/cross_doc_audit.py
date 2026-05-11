@@ -337,6 +337,52 @@ def audit() -> tuple[int, list[str]]:
     else:
         log.append(f"  [OK]   F-EXYNOS count matches: {e_count_md} (exynos.md ≡ hexa.toml)")
 
+    # --- E6. exynos Mk.II observations register completeness (Wave H) --
+    # Mirrors the §11.5 terafab check. The exynos/mk2-observations.md
+    # table MUST contain exactly the {F-EXYNOS-1..7} set; every URL in
+    # its ## Source registry MUST also live in exynos/sources.md.
+    EXMK2 = REPO / "exynos" / "mk2-observations.md"
+    EXSRC = REPO / "exynos" / "sources.md"
+    ex_mk2_txt = read(EXMK2)
+    ex_src_txt = read(EXSRC)
+    if not ex_mk2_txt:
+        log.append("  [DEFERRED] exynos/mk2-observations.md not present (Wave H pending)")
+    else:
+        log.append(f"  [OK]   exynos/mk2-observations.md ({len(ex_mk2_txt):>6} bytes)")
+        ex_mk2_falsifiers = set(re.findall(r"F-EXYNOS-\d+", ex_mk2_txt))
+        ex_expected_set   = {f"F-EXYNOS-{i}" for i in range(1, 8)}
+        ex_missing = ex_expected_set - ex_mk2_falsifiers
+        ex_extra   = ex_mk2_falsifiers - ex_expected_set
+        if ex_missing or ex_extra:
+            log.append(f"  [FAIL] exynos/mk2-observations.md falsifier set mismatch "
+                       f"(missing={sorted(ex_missing)} extra={sorted(ex_extra)})")
+            fails += 1
+        else:
+            log.append("  [OK]   exynos/mk2-observations.md falsifier set = "
+                       "{F-EXYNOS-1..7} exactly")
+        if ex_src_txt:
+            reg_match = re.search(r"##\s+Source registry.*?```(.*?)```",
+                                  ex_mk2_txt, re.DOTALL)
+            if reg_match:
+                ex_mk2_urls = set(re.findall(r"https?://\S+", reg_match.group(1)))
+                ex_src_urls = set(re.findall(r"https?://\S+", ex_src_txt))
+                clean = lambda u: u.rstrip(".,);")
+                ex_mk2_urls = {clean(u) for u in ex_mk2_urls}
+                ex_src_urls = {clean(u) for u in ex_src_urls}
+                orphans = ex_mk2_urls - ex_src_urls
+                if orphans:
+                    log.append(f"  [FAIL] exynos/mk2-observations.md URLs not in sources.md: "
+                               f"{sorted(orphans)[:3]}{'...' if len(orphans) > 3 else ''}")
+                    fails += 1
+                else:
+                    log.append(f"  [OK]   exynos/mk2-observations.md URLs ⊆ sources.md "
+                               f"({len(ex_mk2_urls)} URLs all cross-cited)")
+            else:
+                log.append("  [FAIL] exynos/mk2-observations.md missing '## Source registry' block")
+                fails += 1
+        else:
+            log.append("  [DEFERRED] exynos/sources.md not present — URL cross-check skipped")
+
     # --- E5. meta_domain_closure aggregates correctly ------------------
     mdc = toml_data.get("meta_domain_closure", {})
     expected_aggregates = {

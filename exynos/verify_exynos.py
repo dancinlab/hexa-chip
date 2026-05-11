@@ -16,9 +16,58 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from fractions import Fraction
 from math import erfc, sqrt
+from pathlib import Path
+
+# ── Mk.II observation hook (Wave H) ─────────────────────────────────────────
+# Reads `exynos/mk2-observations.md` (built in Wave H) for current per-
+# falsifier verdicts. Until 2026-Q3 data lands, every entry there reads
+# `DEFERRED`, so this hook leaves the Mk.I behaviour byte-identical. After
+# Mk.II polling appends rows, the most-recent verdict per falsifier
+# replaces the hardcoded `DEFERRED` below in `check_f_exynos_N()` (HARD
+# checks — master identity, Egyptian split, capex didactic, Galaxy cadence,
+# node cadence, F-EXYNOS-7 χ² — are NEVER overridden).
+MK2_OBS_FILE = Path(__file__).resolve().parent / "mk2-observations.md"
+
+
+def read_mk2_observations() -> dict[str, str]:
+    """Parse `mk2-observations.md` and return {falsifier_id → latest_verdict}.
+
+    Append-only log semantics: the last table row for each falsifier wins.
+    Returns an empty dict if the file is missing — callers must treat
+    missing keys as `DEFERRED` (the safe default)."""
+    if not MK2_OBS_FILE.exists():
+        return {}
+    text = MK2_OBS_FILE.read_text(encoding="utf-8")
+    row_re = re.compile(
+        r"^\|\s*(F-EXYNOS-\d+)\s*\|\s*[^|]+?\s*\|\s*[^|]+?\s*\|"
+        r"\s*[^|]+?\s*\|\s*[^|]+?\s*\|\s*([A-Z_]+)\s*\|\s*[^|]+?\s*\|",
+        re.MULTILINE,
+    )
+    out: dict[str, str] = {}
+    for m in row_re.finditer(text):
+        # Last row wins (append-only ⇒ freshest verdict).
+        out[m.group(1).strip()] = m.group(2).strip()
+    return out
+
+
+# Loaded once at module import; HARD checks ignore this.
+_MK2_VERDICTS = read_mk2_observations()
+
+
+def _mk2_or_deferred(fid: str, scaffold_note: str) -> tuple[str, str]:
+    """Return (verdict, detail) — observation verdict if present and not
+    `DEFERRED`, else the hardcoded `DEFERRED` scaffold note. Never returns
+    `OK`/`FAIL` for a HARD check — those are evaluated elsewhere."""
+    obs_verdict = _MK2_VERDICTS.get(fid, "DEFERRED")
+    if obs_verdict in ("PASS", "WEAK_FAIL", "HARD_FAIL", "PENDING_REVIEW"):
+        if obs_verdict == "PASS":      return ("OK",       f"Mk.II obs: PASS — {scaffold_note}")
+        if obs_verdict == "HARD_FAIL": return ("FAIL",     f"Mk.II obs: HARD_FAIL — {scaffold_note}")
+        return ("DEFERRED", f"Mk.II obs: {obs_verdict} (still gathering data) — {scaffold_note}")
+    return ("DEFERRED", scaffold_note)
 
 # ── §7.0 CONSTANTS — re-derived from number theory (0 hard-code) ────────────
 def divisors(n: int) -> set[int]:
@@ -66,39 +115,45 @@ def check_f_exynos_1():
     # Samsung Foundry remains a top-2 worldwide foundry through 2027.
     # Trigger: Foundry quarterly revenue drops below ₩4 T KRW (≈ $3 B)
     # for 2 consecutive quarters by 2027-Q4 → falsified.
-    return ("DEFERRED",
-            "Mk.I scaffold — Samsung Foundry rank #2 (TrendForce 2024-Q4); "
-            "trigger = <₩4T quarterly for 2Q by 2027-Q4.")
+    return _mk2_or_deferred(
+        "F-EXYNOS-1",
+        "Mk.I scaffold — Samsung Foundry rank #2 (TrendForce 2024-Q4); "
+        "trigger = <₩4T quarterly for 2Q by 2027-Q4.")
 
 def check_f_exynos_2():
     # SF2 GAA HVM by 2026-Q4 per public roadmap.
-    return ("DEFERRED",
-            "Mk.I scaffold — SF2 GAA target HVM 2025-Q4 → 2026; "
-            "trigger = explicit slip past 2027-Q2 at Forum keynote.")
+    return _mk2_or_deferred(
+        "F-EXYNOS-2",
+        "Mk.I scaffold — SF2 GAA target HVM 2025-Q4 → 2026; "
+        "trigger = explicit slip past 2027-Q2 at Forum keynote.")
 
 def check_f_exynos_3():
     # ≥ 15 % SF1.4 market share by 2028-Q4.
-    return ("DEFERRED",
-            "Mk.I scaffold — SF1.4 generation share; "
-            "trigger = TrendForce reports <10% SF1.4 share through 2028-Q4.")
+    return _mk2_or_deferred(
+        "F-EXYNOS-3",
+        "Mk.I scaffold — SF1.4 generation share; "
+        "trigger = TrendForce reports <10% SF1.4 share through 2028-Q4.")
 
 def check_f_exynos_4():
     # HBM4 ramp parity vs SK hynix at Samsung Memory DS by 2028.
-    return ("DEFERRED",
-            "Mk.I scaffold — HBM4 ramp parity; "
-            "trigger = SK hynix sustains >2× monthly bit-output vs Samsung through 2028-Q4.")
+    return _mk2_or_deferred(
+        "F-EXYNOS-4",
+        "Mk.I scaffold — HBM4 ramp parity; "
+        "trigger = SK hynix sustains >2× monthly bit-output vs Samsung through 2028-Q4.")
 
 def check_f_exynos_5():
     # Samsung Foundry not spun-off through 2029.
-    return ("DEFERRED",
-            "Mk.I scaffold — Foundry-spin-off rumour watch; "
-            "trigger = Samsung Electronics announces foundry hive-down before 2029-Q4.")
+    return _mk2_or_deferred(
+        "F-EXYNOS-5",
+        "Mk.I scaffold — Foundry-spin-off rumour watch; "
+        "trigger = Samsung Electronics announces foundry hive-down before 2029-Q4.")
 
 def check_f_exynos_6():
     # SF1.0 HVM by 2030 per public node-shrink cadence.
-    return ("DEFERRED",
-            "Mk.I scaffold — long-horizon SF1.0 cadence; "
-            "trigger = explicit slip past 2031-Q4 at Forum.")
+    return _mk2_or_deferred(
+        "F-EXYNOS-6",
+        "Mk.I scaffold — long-horizon SF1.0 cadence; "
+        "trigger = explicit slip past 2031-Q4 at Forum.")
 
 def check_f_exynos_7():
     # χ² lattice fit (exynos.md §4 recipe; residuals = projection guesses)
